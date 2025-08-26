@@ -34,7 +34,34 @@ if [ $? -eq 0 ]; then
     echo "   CSS: $(ls -lh assets/css/admin.min.css | awk '{print $5}') (minified)"
     echo "   JS:  $(ls -lh assets/js/admin.min.js | awk '{print $5}') (minified)"
     echo ""
-    echo "🎉 Ready for production!"
+    
+    # Create release ZIP file
+    echo "📦 Creating release ZIP file..."
+    
+    # Clean up existing release folder
+    rm -rf release/memberpress-bulk-invoice-generator
+    mkdir -p release/memberpress-bulk-invoice-generator
+    
+    # Copy files to release folder (excluding screenshots)
+    cp -r assets memberpress-bulk-invoice-generator.php install.php uninstall.php README.md CHANGELOG.md LICENSE composer.json release/memberpress-bulk-invoice-generator/
+    
+    # Create ZIP file
+    cd release
+    rm -f memberpress-bulk-invoice-generator-v1.0.0.zip
+    zip -r memberpress-bulk-invoice-generator-v1.0.0.zip memberpress-bulk-invoice-generator/
+    
+    if [ $? -eq 0 ]; then
+        echo "✅ Release ZIP created successfully!"
+        echo "📁 Location: release/memberpress-bulk-invoice-generator-v1.0.0.zip"
+        echo "📏 Size: $(ls -lh memberpress-bulk-invoice-generator-v1.0.0.zip | awk '{print $5}')"
+        echo ""
+        echo "🎉 Ready for production and distribution!"
+    else
+        echo "❌ ZIP creation failed!"
+        exit 1
+    fi
+    
+    cd ..
 else
     echo "❌ Build failed!"
     exit 1

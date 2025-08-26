@@ -62,9 +62,13 @@ The source files are located in:
 ## Release Process
 
 When creating a release:
-1. Run `npm run build` to generate minified files
-2. Zip the plugin folder (excluding development files like `node_modules/`, `package.json`, etc.)
-3. The release package will include both development and minified files
+1. Run `npm run build` to generate minified files and create release ZIP
+2. The build script automatically creates a ZIP file in the `release/` folder
+3. The release package excludes:
+   - Development files (`node_modules/`, `package.json`, `webpack.config.js`, etc.)
+   - Screenshots directory (included in GitHub but excluded from ZIP)
+   - Build artifacts and temporary files
+4. Upload the generated ZIP from `release/` folder for distribution
 
 ## Performance Benefits
 

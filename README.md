@@ -75,9 +75,11 @@ memberpress-bulk-invoice-generator/
 ## Release Process
 
 To create a release:
-1. Run `npm run build` to generate minified assets
-2. Zip the plugin folder (excluding development files and screenshots directory)
-3. Upload to WordPress plugin repository or distribute manually
+1. Run `npm run build` to generate minified assets and create release ZIP
+2. The build script automatically creates a ZIP file excluding development files and screenshots
+3. Upload the generated ZIP from `release/` folder to WordPress plugin repository or distribute manually
+
+**Note:** Screenshots are included in the GitHub repository for documentation but excluded from release ZIP files to keep the distribution package clean.
 ```
 
 ## Installation

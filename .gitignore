@@ -140,5 +140,5 @@ install-check-results.txt
 test-results/
 performance-logs/
 
-# Screenshots (exclude from ZIP releases)
-screenshots/
+# Screenshots are included in GitHub but excluded from ZIP releases
+# (handled in build process)
