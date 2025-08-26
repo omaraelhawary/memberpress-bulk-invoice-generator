@@ -1,0 +1,850 @@
+/* MemberPress Bulk Invoice Generator - Modern Admin Styles */
+
+/* Reset and Base Styles */
+.mpbig-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    line-height: 1.6;
+    color: #1d2327;
+}
+
+/* Page Header Styling */
+.mpbig-container h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1d2327;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 115, 170, 0.1);
+}
+
+/* Modern Card Design */
+.mpbig-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e1e5e9;
+    padding: 32px;
+    margin-bottom: 24px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.mpbig-card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+}
+
+.mpbig-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0073aa 0%, #005a87 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+/* Card Headers */
+.mpbig-card h2 {
+    margin: 0 0 24px 0;
+    color: #1d2327;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.mpbig-card h2::before {
+    content: '';
+    width: 4px;
+    height: 28px;
+    background: linear-gradient(180deg, #0073aa 0%, #005a87 100%);
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0, 115, 170, 0.3);
+}
+
+/* Statistics Section */
+.mpbig-stats {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #0073aa;
+}
+
+.mpbig-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.mpbig-stat-item {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.mpbig-stat-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #0073aa 0%, #005a87 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.mpbig-stat-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.mpbig-stat-item:hover::before {
+    transform: scaleX(1);
+}
+
+.mpbig-stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0073aa;
+    display: block;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 115, 170, 0.1);
+}
+
+.mpbig-stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+
+
+/* File Management */
+.mpbig-file-management {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border: 2px solid #e53e3e;
+}
+
+.mpbig-file-management h2 {
+    color: #e53e3e;
+}
+
+.mpbig-file-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.mpbig-file-stat-item {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s ease;
+}
+
+.mpbig-file-stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mpbig-file-stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #e53e3e;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.mpbig-file-stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mpbig-file-actions {
+    text-align: center;
+}
+
+.mpbig-file-warning {
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: #e53e3e;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* Form Styling */
+.mpbig-form-group {
+    margin-bottom: 28px;
+}
+
+/* Add extra space before membership filter */
+.mpbig-form-group:has(select[name="membership_id"]) {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e1e5e9;
+}
+
+.mpbig-form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #1d2327;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+}
+
+.mpbig-form-control {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #ffffff;
+    font-family: inherit;
+}
+
+.mpbig-form-control:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 4px rgba(0, 115, 170, 0.1);
+    transform: translateY(-1px);
+}
+
+.mpbig-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 16px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 48px;
+    appearance: none;
+    cursor: pointer;
+}
+
+/* Checkbox Styling */
+.mpbig-checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.mpbig-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.mpbig-checkbox-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #0073aa 0%, #005a87 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.mpbig-checkbox-item:hover {
+    border-color: #0073aa;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.1);
+}
+
+.mpbig-checkbox-item:hover::before {
+    transform: scaleX(1);
+}
+
+.mpbig-checkbox-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #0073aa;
+    cursor: pointer;
+}
+
+.mpbig-checkbox-item label {
+    margin: 0;
+    font-weight: 600;
+    color: #1d2327;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* Date Inputs */
+.mpbig-date-input {
+    width: 100%;
+    max-width: 200px;
+}
+
+/* Date Row Layout */
+.mpbig-date-row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.mpbig-date-row .mpbig-form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Button Styling */
+.mpbig-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+}
+
+.mpbig-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.mpbig-button:hover::before {
+    left: 100%;
+}
+
+.mpbig-button-primary {
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
+}
+
+.mpbig-button-primary:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004466 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 115, 170, 0.4);
+}
+
+.mpbig-button-primary:active {
+    transform: translateY(0);
+}
+
+.mpbig-button-primary:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.mpbig-button-secondary {
+    background: #f8f9fa;
+    color: #1d2327;
+    border: 2px solid #e1e5e9;
+}
+
+.mpbig-button-secondary:hover {
+    background: #e9ecef;
+    border-color: #0073aa;
+    color: #0073aa;
+}
+
+/* Progress Section */
+.mpbig-progress-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #0073aa;
+}
+
+.mpbig-progress-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.mpbig-progress-header h2 {
+    color: #0073aa;
+    justify-content: center;
+}
+
+/* Modern Progress Bar */
+.mpbig-progress-bar {
+    width: 100%;
+    height: 28px;
+    background: #e9ecef;
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 24px 0;
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mpbig-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa 0%, #005a87 50%, #004466 100%);
+    width: 0%;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mpbig-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        transparent 100%
+    );
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.mpbig-progress-stats {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1d2327;
+    margin-bottom: 16px;
+}
+
+.mpbig-progress-percentage {
+    color: #0073aa;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.mpbig-progress-status {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Results Section */
+.mpbig-results {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.mpbig-notice {
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin: 20px 0;
+    border-left: 5px solid;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-weight: 500;
+}
+
+.mpbig-notice-success {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.mpbig-notice-error {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+.mpbig-notice-warning {
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+.mpbig-notice-info {
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+}
+
+/* Information Section */
+.mpbig-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.mpbig-info ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mpbig-info li {
+    padding: 16px 0;
+    border-bottom: 1px solid #e1e5e9;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #495057;
+    transition: all 0.3s ease;
+}
+
+.mpbig-info li:hover {
+    background: rgba(0, 115, 170, 0.05);
+    padding-left: 8px;
+    border-radius: 8px;
+}
+
+.mpbig-info li:last-child {
+    border-bottom: none;
+}
+
+.mpbig-info li::before {
+    content: '✓';
+    color: #28a745;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: 0 1px 2px rgba(40, 167, 69, 0.3);
+}
+
+/* Loading States */
+.mpbig-loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.mpbig-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #0073aa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ZIP Download Button */
+.mpbig-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    font-size: 15px;
+    letter-spacing: 0.3px;
+}
+
+.mpbig-download-btn:hover {
+    background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+    color: #ffffff;
+}
+
+.mpbig-download-btn::before {
+    content: '⬇';
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .mpbig-container h1 {
+        font-size: 1.8rem;
+    }
+    
+    .mpbig-card {
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .mpbig-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+    }
+    
+
+    
+    .mpbig-checkbox-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .mpbig-date-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .mpbig-date-row .mpbig-form-group {
+        margin-bottom: 16px;
+    }
+    
+    .mpbig-date-input {
+        width: 100%;
+        max-width: none;
+    }
+    
+    .mpbig-progress-stats {
+        font-size: 1.1rem;
+    }
+    
+    .mpbig-progress-status {
+        font-size: 0.9rem;
+    }
+    
+    .mpbig-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .mpbig-container h1 {
+        font-size: 1.6rem;
+    }
+    
+    .mpbig-card {
+        padding: 20px;
+    }
+    
+    .mpbig-card h2 {
+        font-size: 1.3rem;
+    }
+    
+    .mpbig-stat-number {
+        font-size: 2rem;
+    }
+    
+    .mpbig-form-group {
+        margin-bottom: 24px;
+    }
+}
+
+/* Interactive States */
+.mpbig-checked {
+    border-color: #0073aa !important;
+    background: #f0f8ff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.15);
+}
+
+.mpbig-focused {
+    position: relative;
+}
+
+/* Remove the border effect from form groups */
+.mpbig-focused::after {
+    display: none;
+}
+
+@keyframes focusPulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.02); opacity: 0; }
+}
+
+.mpbig-hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+/* Datepicker Custom Styling */
+.mpbig-datepicker-ui {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e1e5e9 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.mpbig-datepicker-ui .ui-datepicker-header {
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
+    border: none !important;
+    border-radius: 12px 12px 0 0 !important;
+    color: #ffffff !important;
+}
+
+.mpbig-datepicker-ui .ui-datepicker-title {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+.mpbig-datepicker-ui .ui-datepicker-prev,
+.mpbig-datepicker-ui .ui-datepicker-next {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+    border-radius: 6px !important;
+    color: #ffffff !important;
+    transition: all 0.3s ease !important;
+}
+
+.mpbig-datepicker-ui .ui-datepicker-prev:hover,
+.mpbig-datepicker-ui .ui-datepicker-next:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: scale(1.1);
+}
+
+.mpbig-datepicker-ui .ui-datepicker-calendar th {
+    background: #f8f9fa !important;
+    border: 1px solid #e1e5e9 !important;
+    color: #495057 !important;
+    font-weight: 700 !important;
+}
+
+.mpbig-datepicker-ui .ui-datepicker-calendar td {
+    border: 1px solid #e1e5e9 !important;
+}
+
+.mpbig-datepicker-ui .ui-datepicker-calendar td a {
+    background: #ffffff !important;
+    border: none !important;
+    color: #495057 !important;
+    text-align: center !important;
+    padding: 10px !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+}
+
+.mpbig-datepicker-ui .ui-datepicker-calendar td a:hover {
+    background: #0073aa !important;
+    color: #ffffff !important;
+    transform: scale(1.1);
+}
+
+.mpbig-datepicker-ui .ui-datepicker-calendar .ui-state-active {
+    background: #0073aa !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+/* Page Load Animation */
+.mpbig-container {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mpbig-loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Enhanced Loading States */
+.mpbig-loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.mpbig-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    z-index: 1;
+}
+
+/* Success Animation */
+.mpbig-notice-success {
+    animation: successSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes successSlideIn {
+    0% { transform: translateX(-30px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Error Animation */
+.mpbig-notice-error {
+    animation: errorShake 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+/* Animation Classes */
+.mpbig-fade-in {
+    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.mpbig-slide-in {
+    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Utility Classes */
+.mpbig-text-center { text-align: center; }
+.mpbig-text-right { text-align: right; }
+.mpbig-mb-0 { margin-bottom: 0; }
+.mpbig-mt-16 { margin-top: 16px; }
+.mpbig-mb-16 { margin-bottom: 16px; }
+.mpbig-hidden { display: none; }
+.mpbig-visible { display: block; }
+

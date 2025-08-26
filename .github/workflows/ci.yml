@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, intl, zip
+
+    - name: Check PHP syntax
+      run: |
+        find . -name "*.php" -exec php -l {} \;
+
+    - name: Check plugin headers
+      run: |
+        php -r "
+        \$plugin_file = 'memberpress-bulk-invoice-generator.php';
+        if (!file_exists(\$plugin_file)) {
+            echo 'Plugin file not found\n';
+            exit(1);
+        }
+        
+        \$content = file_get_contents(\$plugin_file);
+        \$headers = array('Plugin Name', 'Description', 'Version', 'Author');
+        
+        foreach (\$headers as \$header) {
+            if (strpos(\$content, \$header . ':') === false) {
+                echo 'Missing header: ' . \$header . '\n';
+                exit(1);
+            }
+        }
+        
+        echo 'All headers found\n';
+        "
+
+    - name: Check required files
+      run: |
+        required_files=("memberpress-bulk-invoice-generator.php" "README.md" "LICENSE" "css/admin.css" "js/admin.js")
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "Missing file: $file"
+            exit 1
+          fi
+        done
+        echo "All required files present"

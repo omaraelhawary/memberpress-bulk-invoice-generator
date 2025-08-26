@@ -1,0 +1,134 @@
+# WordPress Plugin .gitignore
+
+# WordPress core files
+wp-config.php
+wp-config-sample.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/backup-db/
+wp-content/backups/
+wp-content/blogs.dir/
+wp-content/upgrade/
+wp-content/uploads/
+wp-content/mu-plugins/
+wp-content/wp-cache-config.php
+wp-content/plugins/hello.php
+
+# Plugin specific
+*.log
+*.sql
+*.sqlite
+*.zip
+*.tar.gz
+*.rar
+
+# Generated files
+wp-content/uploads/mepr/mpdf/*.pdf
+wp-content/uploads/mepr/mpdf/*.zip
+wp-content/uploads/mepr/mpdf/temp/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node.js (if using build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Composer (if using PHP dependencies)
+vendor/
+composer.lock
+
+# Build artifacts
+dist/
+build/
+*.min.js
+*.min.css
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# WordPress debug files
+debug.log
+error_log
+
+# Plugin development
+*.pot
+*.po
+*.mo
+
+# Testing
+phpunit.xml
+tests/coverage/
+.phpunit.result.cache
+
+# Documentation build
+docs/_build/
+site/
+
+# Backup files
+*.backup
+*.old
+*.orig
+
+# Cache directories
+cache/
+tmp/
+temp/
+
+# Local development
+local-config.php
+wp-content/db.php
+wp-content/object-cache.php
+wp-content/advanced-cache.php
+
+# Security
+wp-content/wp-cache-config.php
+wp-content/plugins/hello.php
+wp-content/mu-plugins/
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/backup-db/
+wp-content/backups/
+wp-content/blogs.dir/
+wp-content/cache/
+wp-content/upgrade/
+
+# MemberPress specific
+wp-content/uploads/mepr/
+wp-content/uploads/mepr/mpdf/
+wp-content/uploads/mepr/mpdf/*.pdf
+wp-content/uploads/mepr/mpdf/*.zip
+
+# Plugin specific exclusions
+install-check-results.txt
+test-results/
+performance-logs/

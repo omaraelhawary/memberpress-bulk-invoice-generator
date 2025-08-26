@@ -1,0 +1,16 @@
+{
+    "name": "omarelhawary/memberpress-bulk-invoice-generator",
+    "description": "A WordPress plugin for generating bulk PDF invoices for MemberPress transactions",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Omar ElHawary",
+            "email": "contact@omarelhawary.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "minimum-stability": "stable"
+}
