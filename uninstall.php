@@ -2,7 +2,8 @@
 /**
  * Uninstall script for MemberPress Bulk Invoice Generator
  * 
- * This file is executed when the plugin is deleted from WordPress
+ * This script runs when the plugin is deleted from WordPress.
+ * It cleans up all plugin data, options, and generated files.
  */
 
 // If uninstall not called from WordPress, exit
@@ -10,18 +11,51 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
     exit;
 }
 
-// Clean up any options or data if needed
-// Note: This plugin doesn't create any database tables or options,
-// so there's nothing to clean up in the database.
+// Check if we should clean up files
+$cleanup_files = get_option( 'mpbig_cleanup_files_on_uninstall', true );
 
-// Remove any scheduled events if they exist
-wp_clear_scheduled_hook( 'mpbig_cleanup_temp_files' );
-
-// Log the uninstallation for debugging purposes
-if ( function_exists( 'error_log' ) ) {
-    error_log( 'MemberPress Bulk Invoice Generator plugin uninstalled at ' . date( 'Y-m-d H:i:s' ) );
+if ( $cleanup_files ) {
+    // Clean up generated PDF files
+    $upload_dir = wp_upload_dir();
+    $pdf_dir = $upload_dir['basedir'] . '/mepr/mpdf/';
+    
+    if ( is_dir( $pdf_dir ) ) {
+        // Get all PDF and ZIP files created by this plugin
+        $files = array_merge(
+            glob( $pdf_dir . '*.pdf' ),
+            glob( $pdf_dir . 'memberpress-invoices-*.zip' )
+        );
+        
+        foreach ( $files as $file ) {
+            if ( is_file( $file ) ) {
+                unlink( $file );
+            }
+        }
+        
+        // Remove the directory if it's empty
+        if ( count( glob( $pdf_dir . '*' ) ) === 0 ) {
+            rmdir( $pdf_dir );
+        }
+    }
 }
 
-// Note: We don't delete the generated PDF files in wp-content/uploads/mepr/mpdf/
-// as these might be important business documents that the user wants to keep.
-// The user should manually clean up these files if needed.
+// Clean up plugin options
+$options_to_delete = array(
+    'mpbig_progress',
+    'mpbig_cleanup_files_on_uninstall',
+    'mpbig_last_generation_time',
+    'mpbig_generation_stats'
+);
+
+foreach ( $options_to_delete as $option ) {
+    delete_option( $option );
+}
+
+// Clean up any transients
+delete_transient( 'mpbig_progress_data' );
+delete_transient( 'mpbig_generation_status' );
+
+// Log the uninstallation (optional)
+if ( function_exists( 'error_log' ) ) {
+    error_log( 'MemberPress Bulk Invoice Generator plugin uninstalled and cleaned up.' );
+}

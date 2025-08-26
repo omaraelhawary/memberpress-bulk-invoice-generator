@@ -1,6 +1,7 @@
 <?php
 /*
 Plugin Name: MemberPress Bulk Invoice Generator
+Plugin URI: https://github.com/omarelhawary/memberpress-bulk-invoice-generator
 Description: Generate bulk PDF invoices for MemberPress transactions with a user-friendly interface
 Version: 1.0.0
 Author: Omar ElHawary
@@ -88,8 +89,12 @@ class MPBulkInvoiceGenerator {
 
     wp_enqueue_script( 'jquery-ui-datepicker' );
     wp_enqueue_style( 'jquery-ui', 'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css' );
-    wp_enqueue_style( 'mpbig-admin', MPBIG_URL . 'css/admin.css', array(), MPBIG_VERSION );
-    wp_enqueue_script( 'mpbig-admin', MPBIG_URL . 'js/admin.js', array( 'jquery', 'jquery-ui-datepicker' ), MPBIG_VERSION );
+    // Use minified files in production, development files otherwise
+    $css_file = defined( 'WP_DEBUG' ) && WP_DEBUG ? 'assets/css/admin.css' : 'assets/css/admin.min.css';
+    $js_file = defined( 'WP_DEBUG' ) && WP_DEBUG ? 'assets/js/admin.js' : 'assets/js/admin.min.js';
+    
+    wp_enqueue_style( 'mpbig-admin', MPBIG_URL . $css_file, array(), MPBIG_VERSION );
+    wp_enqueue_script( 'mpbig-admin', MPBIG_URL . $js_file, array( 'jquery', 'jquery-ui-datepicker' ), MPBIG_VERSION );
     wp_localize_script( 'mpbig-admin', 'mpbig_ajax', array(
       'ajax_url' => admin_url( 'admin-ajax.php' ),
       'nonce' => wp_create_nonce( 'mpbig_nonce' ),

@@ -1,6 +1,10 @@
 # MemberPress Bulk Invoice Generator
 
-A WordPress plugin that provides a user-friendly interface for generating bulk PDF invoices for MemberPress transactions.
+**Version:** 1.0.0  
+**Requires:** WordPress 5.0+, MemberPress, MemberPress PDF Invoice add-on  
+**Tested up to:** WordPress 6.4
+
+A WordPress plugin that provides a user-friendly interface for generating bulk PDF invoices for MemberPress transactions with optimized performance and WordPress standards compliance.
 
 ## Description
 
@@ -19,6 +23,8 @@ This plugin extends the functionality of MemberPress and the MemberPress PDF Inv
 - **Automatic ZIP Creation**: Option to automatically create a ZIP file containing all generated PDFs for easy download
 - **Error Handling**: Detailed error reporting for failed generations
 - **Security**: Proper nonce verification and capability checks
+- **Performance Optimization**: Minified CSS and JavaScript for faster loading
+- **WordPress Standards**: Compliant with WordPress coding standards
 
 ## Requirements
 
@@ -27,6 +33,48 @@ This plugin extends the functionality of MemberPress and the MemberPress PDF Inv
 - MemberPress PDF Invoice add-on (active)
 - PHP 7.4 or higher
 - PHP ZipArchive extension (for ZIP file creation)
+
+## Development Setup
+
+For development and building minified assets:
+
+- Node.js 14 or higher
+- npm (comes with Node.js)
+
+See [BUILD.md](BUILD.md) for detailed build instructions.
+
+## File Structure
+
+```
+memberpress-bulk-invoice-generator/
+├── memberpress-bulk-invoice-generator.php (Main plugin file)
+├── assets/
+│   ├── css/
+│   │   ├── admin.css (Source styles)
+│   │   └── admin.min.css (Minified styles)
+│   └── js/
+│       ├── admin.js (Source functionality)
+│       └── admin.min.js (Minified functionality)
+├── install.php (Installation script)
+├── uninstall.php (Cleanup script)
+├── README.md (Documentation)
+├── CHANGELOG.md (Version history)
+├── LICENSE (GPL v2.0 license)
+└── composer.json (Composer configuration)
+
+**Development files (not included in releases):**
+- `package.json` - Node.js dependencies
+- `webpack.config.js` - Build configuration
+- `build.sh` - Build script
+- `BUILD.md` - Build documentation
+
+## Release Process
+
+To create a release:
+1. Run `npm run build` to generate minified assets
+2. Zip the plugin folder (excluding development files)
+3. Upload to WordPress plugin repository or distribute manually
+```
 
 ## Installation
 

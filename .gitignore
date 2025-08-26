@@ -13,7 +13,7 @@ wp-content/uploads/
 wp-content/mu-plugins/
 wp-content/wp-cache-config.php
 wp-content/plugins/hello.php
-
+/release
 # Plugin specific
 *.log
 *.sql
@@ -21,6 +21,9 @@ wp-content/plugins/hello.php
 *.zip
 *.tar.gz
 *.rar
+
+# Release files
+/release
 
 # Generated files
 wp-content/uploads/mepr/mpdf/*.pdf
@@ -53,6 +56,9 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
+# Build files (keep package.json and webpack.config.js for development)
+# package-lock.json
+
 # Composer (if using PHP dependencies)
 vendor/
 composer.lock
@@ -60,8 +66,10 @@ composer.lock
 # Build artifacts
 dist/
 build/
-*.min.js
-*.min.css
+
+# WordPress assets (keep both source and minified)
+# assets/css/*.min.css
+# assets/js/*.min.js
 
 # Environment files
 .env
