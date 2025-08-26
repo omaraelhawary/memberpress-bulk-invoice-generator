@@ -378,6 +378,74 @@ jQuery(document).ready(function($) {
         $(this).closest('.mpbig-form-group').removeClass('mpbig-focused');
     });
 
+    // Download files functionality
+    $('#mpbig-download-files').on('click', function() {
+        var $button = $(this);
+        var $spinner = $('#mpbig-download-spinner');
+        
+        // Show loading state
+        $button.prop('disabled', true).addClass('mpbig-loading');
+        $spinner.show();
+
+        var formData = new FormData();
+        formData.append('action', 'mpbig_download_files');
+        formData.append('nonce', mpbig_ajax.nonce);
+
+        $.ajax({
+            url: mpbig_ajax.ajax_url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $button.prop('disabled', false).removeClass('mpbig-loading');
+                $spinner.hide();
+                
+                if (response.success) {
+                    // Create download link and trigger download
+                    var link = document.createElement('a');
+                    link.href = response.zip_url;
+                    link.download = response.zip_filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Show success message
+                    var message = '<div class="mpbig-notice mpbig-notice-success"><p>' + response.message + ' (' + response.file_count + ' files)</p></div>';
+                    $('.mpbig-file-management').after(message);
+                    
+                    // Scroll to message
+                    $('html, body').animate({
+                        scrollTop: $('.mpbig-notice-success').offset().top - 100
+                    }, 500);
+                    
+                    // Remove message after 5 seconds
+                    setTimeout(function() {
+                        $('.mpbig-notice-success').fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                    }, 5000);
+                } else {
+                    // Show error message
+                    var message = '<div class="mpbig-notice mpbig-notice-error"><p>' + response.message + '</p></div>';
+                    $('.mpbig-file-management').after(message);
+                    
+                    // Scroll to message
+                    $('html, body').animate({
+                        scrollTop: $('.mpbig-notice-error').offset().top - 100
+                    }, 500);
+                }
+            },
+            error: function(xhr, status, error) {
+                $button.prop('disabled', false).removeClass('mpbig-loading');
+                $spinner.hide();
+                
+                var message = '<div class="mpbig-notice mpbig-notice-error"><p>Error: ' + error + '</p></div>';
+                $('.mpbig-file-management').after(message);
+            }
+        });
+    });
+
     // Empty folder functionality
     $('#mpbig-empty-folder').on('click', function() {
         if (!confirm('Are you sure you want to delete all PDF files? This action cannot be undone.')) {

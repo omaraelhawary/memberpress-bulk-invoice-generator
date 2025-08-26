@@ -186,6 +186,40 @@
 
 .mpbig-file-actions {
     text-align: center;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.mpbig-file-actions .mpbig-button {
+    min-width: 160px;
+}
+
+.mpbig-file-actions .mpbig-button-primary {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.mpbig-file-actions .mpbig-button-primary:hover {
+    background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+}
+
+.mpbig-file-actions .mpbig-button-primary:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+/* Add a download icon to the button */
+.mpbig-file-actions .mpbig-button-primary::after {
+    content: '⬇';
+    margin-left: 8px;
+    font-size: 14px;
 }
 
 .mpbig-file-warning {

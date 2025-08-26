@@ -139,3 +139,6 @@ wp-content/uploads/mepr/mpdf/*.zip
 install-check-results.txt
 test-results/
 performance-logs/
+
+# Screenshots (exclude from ZIP releases)
+screenshots/

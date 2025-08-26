@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: MemberPress Bulk Invoice Generator
-Plugin URI: 
+Plugin URI: https://github.com/omaraelhawary/memberpress-bulk-invoice-generator
 Description: Generate bulk PDF invoices for MemberPress transactions with a user-friendly interface
 Version: 1.0.0
 Author: Omar ElHawary
@@ -59,6 +59,7 @@ class MPBulkInvoiceGenerator {
     add_action( 'wp_ajax_mpbig_create_zip', array( $this, 'ajax_create_zip' ) );
     add_action( 'wp_ajax_mpbig_get_progress', array( $this, 'ajax_get_progress' ) );
     add_action( 'wp_ajax_mpbig_empty_folder', array( $this, 'ajax_empty_folder' ) );
+    add_action( 'wp_ajax_mpbig_download_files', array( $this, 'ajax_download_files' ) );
     add_action( 'admin_notices', array( $this, 'admin_notices' ) );
     
     // Clean up old progress data
@@ -285,6 +286,10 @@ class MPBulkInvoiceGenerator {
         </div>
         
         <div class="mpbig-file-actions">
+          <button type="button" class="mpbig-button mpbig-button-primary" id="mpbig-download-files" <?php echo $file_count > 0 ? '' : 'disabled'; ?>>
+            <span class="mpbig-spinner" id="mpbig-download-spinner" style="display: none;"></span>
+            <?php _e( 'Download All Files', 'memberpress-bulk-invoice-generator' ); ?>
+          </button>
           <button type="button" class="mpbig-button mpbig-button-secondary" id="mpbig-empty-folder">
             <span class="mpbig-spinner" id="mpbig-empty-spinner" style="display: none;"></span>
             <?php _e( 'Empty PDF Folder', 'memberpress-bulk-invoice-generator' ); ?>
@@ -628,6 +633,56 @@ class MPBulkInvoiceGenerator {
       wp_send_json( array(
         'success' => false,
         'message' => __( 'No files found to delete.', 'memberpress-bulk-invoice-generator' )
+      ) );
+    }
+  }
+
+  /**
+   * AJAX handler for downloading files
+   */
+  public function ajax_download_files() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+      wp_die( __( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) );
+    }
+
+    if ( ! wp_verify_nonce( $_POST['nonce'], 'mpbig_nonce' ) ) {
+      wp_die( __( 'Security check failed.', 'memberpress-bulk-invoice-generator' ) );
+    }
+
+    $pdf_dir = WP_CONTENT_DIR . '/uploads/mepr/mpdf/';
+    
+    if ( ! is_dir( $pdf_dir ) ) {
+      wp_send_json( array(
+        'success' => false,
+        'message' => __( 'PDF directory not found.', 'memberpress-bulk-invoice-generator' )
+      ) );
+    }
+
+    // Check if there are any PDF files
+    $pdf_files = glob( $pdf_dir . '*.pdf' );
+    if ( empty( $pdf_files ) ) {
+      wp_send_json( array(
+        'success' => false,
+        'message' => __( 'No PDF files found to download.', 'memberpress-bulk-invoice-generator' )
+      ) );
+    }
+
+    // Create ZIP file
+    $zip_file = $this->create_zip_file( $pdf_dir );
+    
+    if ( $zip_file ) {
+      $zip_url = content_url( '/uploads/mepr/mpdf/' . basename( $zip_file ) );
+      wp_send_json( array(
+        'success' => true,
+        'message' => __( 'ZIP file created successfully!', 'memberpress-bulk-invoice-generator' ),
+        'zip_url' => $zip_url,
+        'zip_filename' => basename( $zip_file ),
+        'file_count' => count( $pdf_files )
+      ) );
+    } else {
+      wp_send_json( array(
+        'success' => false,
+        'message' => __( 'Failed to create ZIP file.', 'memberpress-bulk-invoice-generator' )
       ) );
     }
   }

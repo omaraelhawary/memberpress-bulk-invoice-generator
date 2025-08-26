@@ -6,6 +6,8 @@
 
 A WordPress plugin that provides a user-friendly interface for generating bulk PDF invoices for MemberPress transactions with optimized performance and WordPress standards compliance.
 
+![MemberPress Bulk Invoice Generator Dashboard](screenshots/dashboard.png)
+
 ## Description
 
 This plugin extends the functionality of MemberPress and the MemberPress PDF Invoice add-on by providing a convenient admin interface to generate PDF invoices for multiple transactions at once. It supports both generating invoices for all transactions and generating invoices for a specific time period.
@@ -55,6 +57,8 @@ memberpress-bulk-invoice-generator/
 │   └── js/
 │       ├── admin.js (Source functionality)
 │       └── admin.min.js (Minified functionality)
+├── screenshots/
+│   └── dashboard.png (Plugin interface screenshot)
 ├── install.php (Installation script)
 ├── uninstall.php (Cleanup script)
 ├── README.md (Documentation)
@@ -72,7 +76,7 @@ memberpress-bulk-invoice-generator/
 
 To create a release:
 1. Run `npm run build` to generate minified assets
-2. Zip the plugin folder (excluding development files)
+2. Zip the plugin folder (excluding development files and screenshots directory)
 3. Upload to WordPress plugin repository or distribute manually
 ```
 
