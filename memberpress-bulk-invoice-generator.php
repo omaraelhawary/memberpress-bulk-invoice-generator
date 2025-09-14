@@ -137,20 +137,20 @@ class MPBulkInvoiceGenerator {
         <h2><?php esc_html_e( 'Transaction Statistics', 'memberpress-bulk-invoice-generator' ); ?></h2>
         <div class="mpbig-stats-grid">
           <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( $stats['total'] ); ?></span>
+            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['total'] ); ?></span>
             <span class="mpbig-stat-label"><?php esc_html_e( 'Total Transactions', 'memberpress-bulk-invoice-generator' ); ?></span>
           </div>
           <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( $stats['completed'] ); ?></span>
+            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['completed'] ); ?></span>
             <span class="mpbig-stat-label"><?php esc_html_e( 'Completed', 'memberpress-bulk-invoice-generator' ); ?></span>
           </div>
 
           <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( $stats['pending'] ); ?></span>
+            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['pending'] ); ?></span>
             <span class="mpbig-stat-label"><?php esc_html_e( 'Pending', 'memberpress-bulk-invoice-generator' ); ?></span>
           </div>
           <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( $stats['refunded'] ); ?></span>
+            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['refunded'] ); ?></span>
             <span class="mpbig-stat-label"><?php esc_html_e( 'Refunded', 'memberpress-bulk-invoice-generator' ); ?></span>
           </div>
         </div>
@@ -281,7 +281,7 @@ class MPBulkInvoiceGenerator {
           }
           ?>
           <div class="mpbig-file-stat-item">
-            <span class="mpbig-file-stat-number"><?php echo number_format( $file_count ); ?></span>
+            <span class="mpbig-file-stat-number"><?php echo number_format( (int) $file_count ); ?></span>
             <span class="mpbig-file-stat-label"><?php esc_html_e( 'PDF Files', 'memberpress-bulk-invoice-generator' ); ?></span>
           </div>
           <div class="mpbig-file-stat-item">
@@ -344,23 +344,29 @@ class MPBulkInvoiceGenerator {
       // Validate table name to prevent SQL injection
       $table = preg_replace( '/[^a-zA-Z0-9_]/', '', $table );
       
-      // Direct database queries are necessary here for transaction statistics
-      // WordPress doesn't provide built-in functions for MemberPress transaction counting
-      // We use proper caching and table name validation for security
-      // Table name is validated above with preg_replace to prevent SQL injection
-      // This is a legitimate use case where direct database access is required
-      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- MemberPress transaction counting required
-      $stats['total'] = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `%s`", $table ) );
+      // Check if MemberPress transactions table exists
+      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table existence check required
+      $table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) === $table;
       
-      // Status counts - direct queries with validated table name and hardcoded status values
-      // Table name is validated above with preg_replace to prevent SQL injection
-      // This is a legitimate use case where direct database access is required
-      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- MemberPress transaction counting required
-      $stats['completed'] = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `%s` WHERE status = 'complete'", $table ) );
-      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- MemberPress transaction counting required
-      $stats['pending'] = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `%s` WHERE status = 'pending'", $table ) );
-      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- MemberPress transaction counting required
-      $stats['refunded'] = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `%s` WHERE status = 'refunded'", $table ) );
+      if ( $table_exists ) {
+        // Direct database queries are necessary here for transaction statistics
+        // WordPress doesn't provide built-in functions for MemberPress transaction counting
+        // We use proper caching and table name validation for security
+        // Table name is validated above with preg_replace to prevent SQL injection
+        // This is a legitimate use case where direct database access is required
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
+        $stats['total'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+        
+        // Status counts - direct queries with validated table name and hardcoded status values
+        // Table name is validated above with preg_replace to prevent SQL injection
+        // This is a legitimate use case where direct database access is required
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
+        $stats['completed'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE status = 'complete'" );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
+        $stats['pending'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE status = 'pending'" );
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
+        $stats['refunded'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE status = 'refunded'" );
+      }
 
       // Cache the results for 5 minutes
       wp_cache_set( $cache_key, $stats, 'mpbig_stats', 300 );
@@ -739,34 +745,42 @@ class MPBulkInvoiceGenerator {
       // Validate table name to prevent SQL injection
       $table = preg_replace( '/[^a-zA-Z0-9_]/', '', $table );
       
-      $status_placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
+      // Check if MemberPress transactions table exists
+      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table existence check required
+      $table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) === $table;
       
-      // Build query parts - use sprintf for table name since it's validated
-      $base_query = sprintf( "SELECT id FROM `%s` WHERE status IN (%s)", $table, $status_placeholders );
-      $query_args = $statuses;
+      if ( $table_exists ) {
+        $status_placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
+        
+        // Build query parts - use sprintf for table name since it's validated
+        $base_query = sprintf( "SELECT id FROM `%s` WHERE status IN (%s)", $table, $status_placeholders );
+        $query_args = $statuses;
 
-      if ( $type === 'period' && ! empty( $start_date ) && ! empty( $end_date ) ) {
-        $base_query .= " AND created_at > %s AND created_at < %s";
-        $query_args[] = $start_date;
-        $query_args[] = $end_date;
+        if ( $type === 'period' && ! empty( $start_date ) && ! empty( $end_date ) ) {
+          $base_query .= " AND created_at > %s AND created_at < %s";
+          $query_args[] = $start_date;
+          $query_args[] = $end_date;
+        }
+
+        // Add membership filter if specified
+        if ( $membership_id > 0 ) {
+          $base_query .= " AND product_id = %d";
+          $query_args[] = $membership_id;
+        }
+
+        $base_query .= " ORDER BY created_at ASC";
+
+        // Direct database query is necessary here for transaction ID retrieval
+        // WordPress doesn't provide built-in functions for MemberPress transaction queries
+        // We use prepared statements and proper caching for security and performance
+        // This is a legitimate use case where direct database access is required
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- MemberPress transaction queries required
+        $results = $wpdb->get_results( $wpdb->prepare( $base_query, $query_args ) );
+
+        $txn_ids = array_map( function( $row ) { return $row->id; }, $results );
+      } else {
+        $txn_ids = array();
       }
-
-      // Add membership filter if specified
-      if ( $membership_id > 0 ) {
-        $base_query .= " AND product_id = %d";
-        $query_args[] = $membership_id;
-      }
-
-      $base_query .= " ORDER BY created_at ASC";
-
-      // Direct database query is necessary here for transaction ID retrieval
-      // WordPress doesn't provide built-in functions for MemberPress transaction queries
-      // We use prepared statements and proper caching for security and performance
-      // This is a legitimate use case where direct database access is required
-      // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- MemberPress transaction queries required
-      $results = $wpdb->get_results( $wpdb->prepare( $base_query, $query_args ) );
-
-      $txn_ids = array_map( function( $row ) { return $row->id; }, $results );
       
       // Cache the results for 2 minutes (shorter cache for dynamic queries)
       wp_cache_set( $cache_key, $txn_ids, 'mpbig_transactions', 120 );
