@@ -1,10 +1,13 @@
 # MemberPress Bulk Invoice Generator
 
 **Version:** 1.0.0  
-**Requires:** WordPress 5.0+, MemberPress, MemberPress PDF Invoice add-on  
-**Tested up to:** WordPress 6.4
+**Requires at least:** 5.0  
+**Tested up to:** 6.8  
+**Stable tag:** 1.0.0  
+**License:** GPLv2 or later  
+**License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
-A WordPress plugin that provides a user-friendly interface for generating bulk PDF invoices for MemberPress transactions with optimized performance and WordPress standards compliance.
+Generate bulk PDF invoices for MemberPress transactions.
 
 ![MemberPress Bulk Invoice Generator Dashboard](screenshots/dashboard.png)
 

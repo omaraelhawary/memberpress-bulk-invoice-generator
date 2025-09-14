@@ -40,7 +40,12 @@ class MPBIG_Installer {
      * Run installation check
      */
     public function run_installation_check() {
-        if ( isset( $_GET['page'] ) && $_GET['page'] === 'memberpress-bulk-invoice-installer' ) {
+        // No nonce verification needed for GET page parameter - this is just reading a page identifier
+        // We're only checking if the current page matches our installer page, not processing form data
+        // This is a legitimate use case where nonce verification is not required per WordPress standards
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page parameter reading only
+        $current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+        if ( $current_page === 'memberpress-bulk-invoice-installer' ) {
             $this->check_requirements();
         }
     }
@@ -92,14 +97,33 @@ class MPBIG_Installer {
         $upload_dir = wp_upload_dir();
         $mepr_dir = $upload_dir['basedir'] . '/mepr/mpdf/';
         
-        if ( ! is_dir( $mepr_dir ) ) {
-            if ( ! wp_mkdir_p( $mepr_dir ) ) {
+        // Initialize WP_Filesystem
+        if ( ! function_exists( 'WP_Filesystem' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+        
+        $access_type = get_filesystem_method();
+        if ( 'direct' === $access_type ) {
+            $creds = request_filesystem_credentials( site_url() . '/wp-admin/', '', false, false, array() );
+            if ( ! WP_Filesystem( $creds ) ) {
+                $this->warnings[] = __( 'Cannot initialize filesystem access.', 'memberpress-bulk-invoice-generator' );
+                return;
+            }
+        } else {
+            $this->warnings[] = __( 'Filesystem access not available for directory checks.', 'memberpress-bulk-invoice-generator' );
+            return;
+        }
+        
+        global $wp_filesystem;
+        
+        if ( ! $wp_filesystem->is_dir( $mepr_dir ) ) {
+            if ( ! $wp_filesystem->mkdir( $mepr_dir, FS_CHMOD_DIR ) ) {
                 $this->errors[] = __( 'Cannot create the required directory: ', 'memberpress-bulk-invoice-generator' ) . $mepr_dir;
             } else {
                 $this->success[] = __( 'Created required directory: ', 'memberpress-bulk-invoice-generator' ) . $mepr_dir;
             }
         } else {
-            if ( ! is_writable( $mepr_dir ) ) {
+            if ( ! $wp_filesystem->is_writable( $mepr_dir ) ) {
                 $this->warnings[] = __( 'Directory is not writable: ', 'memberpress-bulk-invoice-generator' ) . $mepr_dir;
             } else {
                 $this->success[] = __( 'Directory is writable: ', 'memberpress-bulk-invoice-generator' ) . $mepr_dir;
@@ -107,9 +131,26 @@ class MPBIG_Installer {
         }
         
         // Check database table
-        global $wpdb;
-        $table = $wpdb->prefix . 'mepr_transactions';
-        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) === $table;
+        $table = 'mepr_transactions';
+        $cache_key = 'mpbig_table_exists_' . $table;
+        
+        // Check cache first
+        $table_exists = wp_cache_get( $cache_key, 'mpbig_installer' );
+        
+        if ( false === $table_exists ) {
+            global $wpdb;
+            $full_table_name = $wpdb->prefix . $table;
+            
+            // Direct database query is necessary here to check if table exists
+            // WordPress doesn't provide a built-in function for this specific use case
+            // We use proper caching to minimize database calls
+            // This is a legitimate use case where direct database access is required
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table existence check required
+            $table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $full_table_name ) ) === $full_table_name;
+            
+            // Cache the result for 5 minutes
+            wp_cache_set( $cache_key, $table_exists, 'mpbig_installer', 300 );
+        }
         
         if ( ! $table_exists ) {
             $this->errors[] = __( 'MemberPress transactions table not found. Please ensure MemberPress is properly installed.', 'memberpress-bulk-invoice-generator' );
@@ -142,15 +183,15 @@ class MPBIG_Installer {
     public function installer_page() {
         ?>
         <div class="wrap">
-            <h1><?php _e( 'MemberPress Bulk Invoice Generator - Installation Check', 'memberpress-bulk-invoice-generator' ); ?></h1>
+            <h1><?php esc_html_e( 'MemberPress Bulk Invoice Generator - Installation Check', 'memberpress-bulk-invoice-generator' ); ?></h1>
             
             <div class="mpbig-installer-container">
                 <div class="mpbig-installer-card">
-                    <h2><?php _e( 'System Requirements Check', 'memberpress-bulk-invoice-generator' ); ?></h2>
+                    <h2><?php esc_html_e( 'System Requirements Check', 'memberpress-bulk-invoice-generator' ); ?></h2>
                     
                     <?php if ( ! empty( $this->errors ) ) : ?>
                         <div class="mpbig-notice mpbig-notice-error">
-                            <h3><?php _e( 'Critical Issues Found:', 'memberpress-bulk-invoice-generator' ); ?></h3>
+                            <h3><?php esc_html_e( 'Critical Issues Found:', 'memberpress-bulk-invoice-generator' ); ?></h3>
                             <ul>
                                 <?php foreach ( $this->errors as $error ) : ?>
                                     <li><?php echo esc_html( $error ); ?></li>
@@ -161,7 +202,7 @@ class MPBIG_Installer {
                     
                     <?php if ( ! empty( $this->warnings ) ) : ?>
                         <div class="mpbig-notice mpbig-notice-warning">
-                            <h3><?php _e( 'Warnings:', 'memberpress-bulk-invoice-generator' ); ?></h3>
+                            <h3><?php esc_html_e( 'Warnings:', 'memberpress-bulk-invoice-generator' ); ?></h3>
                             <ul>
                                 <?php foreach ( $this->warnings as $warning ) : ?>
                                     <li><?php echo esc_html( $warning ); ?></li>
@@ -172,7 +213,7 @@ class MPBIG_Installer {
                     
                     <?php if ( ! empty( $this->success ) ) : ?>
                         <div class="mpbig-notice mpbig-notice-success">
-                            <h3><?php _e( 'All Checks Passed:', 'memberpress-bulk-invoice-generator' ); ?></h3>
+                            <h3><?php esc_html_e( 'All Checks Passed:', 'memberpress-bulk-invoice-generator' ); ?></h3>
                             <ul>
                                 <?php foreach ( $this->success as $success ) : ?>
                                     <li><?php echo esc_html( $success ); ?></li>
@@ -183,29 +224,29 @@ class MPBIG_Installer {
                     
                     <div class="mpbig-installer-actions">
                         <?php if ( empty( $this->errors ) ) : ?>
-                            <a href="<?php echo admin_url( 'admin.php?page=memberpress-bulk-invoice-generator' ); ?>" class="mpbig-button mpbig-button-primary">
-                                <?php _e( 'Go to Bulk Invoice Generator', 'memberpress-bulk-invoice-generator' ); ?>
+                            <a href="<?php echo esc_url( admin_url( 'admin.php?page=memberpress-bulk-invoice-generator' ) ); ?>" class="mpbig-button mpbig-button-primary">
+                                <?php esc_html_e( 'Go to Bulk Invoice Generator', 'memberpress-bulk-invoice-generator' ); ?>
                             </a>
                         <?php else : ?>
                             <p class="mpbig-installer-error-message">
-                                <?php _e( 'Please fix the critical issues above before using the plugin.', 'memberpress-bulk-invoice-generator' ); ?>
+                                <?php esc_html_e( 'Please fix the critical issues above before using the plugin.', 'memberpress-bulk-invoice-generator' ); ?>
                             </p>
                         <?php endif; ?>
                         
-                        <a href="<?php echo admin_url( 'plugins.php' ); ?>" class="mpbig-button mpbig-button-secondary">
-                            <?php _e( 'Back to Plugins', 'memberpress-bulk-invoice-generator' ); ?>
+                        <a href="<?php echo esc_url( admin_url( 'plugins.php' ) ); ?>" class="mpbig-button mpbig-button-secondary">
+                            <?php esc_html_e( 'Back to Plugins', 'memberpress-bulk-invoice-generator' ); ?>
                         </a>
                     </div>
                 </div>
                 
                 <div class="mpbig-installer-card">
-                    <h2><?php _e( 'Next Steps', 'memberpress-bulk-invoice-generator' ); ?></h2>
+                    <h2><?php esc_html_e( 'Next Steps', 'memberpress-bulk-invoice-generator' ); ?></h2>
                     <ol>
-                        <li><?php _e( 'Ensure all requirements are met (no critical errors above)', 'memberpress-bulk-invoice-generator' ); ?></li>
-                        <li><?php _e( 'Click "Go to Bulk Invoice Generator" to access the tool', 'memberpress-bulk-invoice-generator' ); ?></li>
-                        <li><?php _e( 'Review the transaction statistics on the main page', 'memberpress-bulk-invoice-generator' ); ?></li>
-                        <li><?php _e( 'Choose your generation options and start creating invoices', 'memberpress-bulk-invoice-generator' ); ?></li>
-                        <li><?php _e( 'Download the generated files before running the process again', 'memberpress-bulk-invoice-generator' ); ?></li>
+                        <li><?php esc_html_e( 'Ensure all requirements are met (no critical errors above)', 'memberpress-bulk-invoice-generator' ); ?></li>
+                        <li><?php esc_html_e( 'Click "Go to Bulk Invoice Generator" to access the tool', 'memberpress-bulk-invoice-generator' ); ?></li>
+                        <li><?php esc_html_e( 'Review the transaction statistics on the main page', 'memberpress-bulk-invoice-generator' ); ?></li>
+                        <li><?php esc_html_e( 'Choose your generation options and start creating invoices', 'memberpress-bulk-invoice-generator' ); ?></li>
+                        <li><?php esc_html_e( 'Download the generated files before running the process again', 'memberpress-bulk-invoice-generator' ); ?></li>
                     </ol>
                 </div>
             </div>

@@ -28,13 +28,24 @@ if ( $cleanup_files ) {
         
         foreach ( $files as $file ) {
             if ( is_file( $file ) ) {
-                unlink( $file );
+                wp_delete_file( $file );
             }
         }
         
-        // Remove the directory if it's empty
-        if ( count( glob( $pdf_dir . '*' ) ) === 0 ) {
-            rmdir( $pdf_dir );
+        // Remove the directory if it's empty using WP_Filesystem
+        if ( ! function_exists( 'WP_Filesystem' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+        
+        $access_type = get_filesystem_method();
+        if ( 'direct' === $access_type ) {
+            $creds = request_filesystem_credentials( site_url() . '/wp-admin/', '', false, false, array() );
+            if ( WP_Filesystem( $creds ) ) {
+                global $wp_filesystem;
+                if ( count( glob( $pdf_dir . '*' ) ) === 0 ) {
+                    $wp_filesystem->rmdir( $pdf_dir );
+                }
+            }
         }
     }
 }
@@ -54,8 +65,3 @@ foreach ( $options_to_delete as $option ) {
 // Clean up any transients
 delete_transient( 'mpbig_progress_data' );
 delete_transient( 'mpbig_generation_status' );
-
-// Log the uninstallation (optional)
-if ( function_exists( 'error_log' ) ) {
-    error_log( 'MemberPress Bulk Invoice Generator plugin uninstalled and cleaned up.' );
-}
