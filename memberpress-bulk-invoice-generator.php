@@ -144,7 +144,6 @@ class MPBulkInvoiceGenerator {
             <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['completed'] ); ?></span>
             <span class="mpbig-stat-label"><?php esc_html_e( 'Completed', 'memberpress-bulk-invoice-generator' ); ?></span>
           </div>
-
           <div class="mpbig-stat-item">
             <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['pending'] ); ?></span>
             <span class="mpbig-stat-label"><?php esc_html_e( 'Pending', 'memberpress-bulk-invoice-generator' ); ?></span>
@@ -153,6 +152,12 @@ class MPBulkInvoiceGenerator {
             <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['refunded'] ); ?></span>
             <span class="mpbig-stat-label"><?php esc_html_e( 'Refunded', 'memberpress-bulk-invoice-generator' ); ?></span>
           </div>
+          <?php if ( (int) $stats['other'] > 0 ) : ?>
+          <div class="mpbig-stat-item">
+            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['other'] ); ?></span>
+            <span class="mpbig-stat-label"><?php esc_html_e( 'Other', 'memberpress-bulk-invoice-generator' ); ?></span>
+          </div>
+          <?php endif; ?>
         </div>
 
 
@@ -346,7 +351,7 @@ class MPBulkInvoiceGenerator {
           <li><?php esc_html_e( 'Generated PDF files will be saved in: wp-content/uploads/mepr/mpdf/', 'memberpress-bulk-invoice-generator' ); ?></li>
           <li><?php esc_html_e( 'Download the files before running the process again to avoid overwriting.', 'memberpress-bulk-invoice-generator' ); ?></li>
           <li><?php esc_html_e( 'The process uses batch processing to handle large datasets efficiently.', 'memberpress-bulk-invoice-generator' ); ?></li>
-          <li><?php esc_html_e( 'Only transactions with status: Complete, Confirmed, Pending, or Refunded will be processed.', 'memberpress-bulk-invoice-generator' ); ?></li>
+          <li><?php esc_html_e( 'Only payment transactions with status: Complete, Pending, or Refunded will be processed (excludes confirmation and failed transactions).', 'memberpress-bulk-invoice-generator' ); ?></li>
           <li><?php esc_html_e( 'ZIP files are automatically created for easier download and organization.', 'memberpress-bulk-invoice-generator' ); ?></li>
         </ul>
       </div>
@@ -383,23 +388,22 @@ class MPBulkInvoiceGenerator {
       $table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) === $table;
       
       if ( $table_exists ) {
-        // Direct database queries are necessary here for transaction statistics
-        // WordPress doesn't provide built-in functions for MemberPress transaction counting
-        // We use proper caching and table name validation for security
-        // Table name is validated above with preg_replace to prevent SQL injection
-        // This is a legitimate use case where direct database access is required
+        // Match MemberPress default behavior: exclude confirmations, non-payment transactions, and failed transactions
+        // This matches what's shown in the MemberPress transactions list by default, excluding failed transactions that have no invoices
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
-        $stats['total'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+        $stats['total'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE txn_type = 'payment' AND status <> 'confirmed' AND status <> 'failed'" );
         
-        // Status counts - direct queries with validated table name and hardcoded status values
-        // Table name is validated above with preg_replace to prevent SQL injection
-        // This is a legitimate use case where direct database access is required
+        // Status counts - only count payment transactions that can have invoices, exclude confirmed and failed status
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
-        $stats['completed'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE status = 'complete'" );
+        $stats['completed'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE txn_type = 'payment' AND status = 'complete'" );
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
-        $stats['pending'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE status = 'pending'" );
+        $stats['pending'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE txn_type = 'payment' AND status = 'pending'" );
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
-        $stats['refunded'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE status = 'refunded'" );
+        $stats['refunded'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE txn_type = 'payment' AND status = 'refunded'" );
+        
+        // Count other statuses that might have invoices (excluding failed and confirmed)
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- MemberPress transaction counting required
+        $stats['other'] = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE txn_type = 'payment' AND status <> 'confirmed' AND status NOT IN ('complete', 'pending', 'refunded', 'failed')" );
       }
 
       // Cache the results for 5 minutes
@@ -413,13 +417,16 @@ class MPBulkInvoiceGenerator {
    * AJAX handler for generating invoices
    */
   public function ajax_generate_invoices() {
-    if ( ! current_user_can( 'manage_options' ) ) {
-      wp_die( esc_html__( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) );
-    }
+    try {
+      if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) ) );
+        return;
+      }
 
-    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpbig_nonce' ) ) {
-      wp_die( esc_html__( 'Security check failed.', 'memberpress-bulk-invoice-generator' ) );
-    }
+      if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpbig_nonce' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed.', 'memberpress-bulk-invoice-generator' ) ) );
+        return;
+      }
 
     $type = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : 'all';
     $statuses = isset( $_POST['status'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['status'] ) ) : array( 'complete', 'pending', 'refunded' );
@@ -433,6 +440,22 @@ class MPBulkInvoiceGenerator {
     if ( $type === 'period' ) {
       $start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) . ' 00:00:00' : '';
       $end_date = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) . ' 23:59:59' : '';
+      
+      // Validate date format
+      if ( ! empty( $start_date ) && ! $this->validate_date( $start_date ) ) {
+        wp_send_json_error( array( 'message' => __( 'Invalid start date format. Please use YYYY-MM-DD format.', 'memberpress-bulk-invoice-generator' ) ) );
+        return;
+      }
+      
+      if ( ! empty( $end_date ) && ! $this->validate_date( $end_date ) ) {
+        wp_send_json_error( array( 'message' => __( 'Invalid end date format. Please use YYYY-MM-DD format.', 'memberpress-bulk-invoice-generator' ) ) );
+        return;
+      }
+      
+      if ( ! empty( $start_date ) && ! empty( $end_date ) && strtotime( $start_date ) > strtotime( $end_date ) ) {
+        wp_send_json_error( array( 'message' => __( 'Start date must be before end date.', 'memberpress-bulk-invoice-generator' ) ) );
+        return;
+      }
     }
 
     // Get all transaction IDs that match criteria
@@ -466,6 +489,10 @@ class MPBulkInvoiceGenerator {
       'total' => count( $txn_ids ),
       'batch_size' => $this->batch_size
     ) );
+    
+    } catch ( Exception $e ) {
+      wp_send_json_error( array( 'message' => __( 'An error occurred while processing your request: ', 'memberpress-bulk-invoice-generator' ) . $e->getMessage() ) );
+    }
   }
 
   /**
@@ -763,6 +790,14 @@ class MPBulkInvoiceGenerator {
   }
 
   /**
+   * Validate date format
+   */
+  private function validate_date( $date ) {
+    $d = DateTime::createFromFormat( 'Y-m-d H:i:s', $date );
+    return $d && $d->format( 'Y-m-d H:i:s' ) === $date;
+  }
+
+  /**
    * Get transaction IDs based on criteria
    */
   private function get_transaction_ids( $type, $statuses, $start_date = '', $end_date = '', $membership_id = 0, $customer_email = '' ) {
@@ -795,7 +830,8 @@ class MPBulkInvoiceGenerator {
           $base_query .= " INNER JOIN {$wpdb->users} u ON t.user_id = u.ID";
         }
         
-        $base_query .= sprintf( " WHERE t.status IN (%s)", $status_placeholders );
+        // Match MemberPress default behavior: exclude confirmations, non-payment transactions, and failed transactions
+        $base_query .= sprintf( " WHERE t.txn_type = 'payment' AND t.status <> 'confirmed' AND t.status <> 'failed' AND t.status IN (%s)", $status_placeholders );
         $query_args = $statuses;
 
         if ( $type === 'period' && ! empty( $start_date ) && ! empty( $end_date ) ) {

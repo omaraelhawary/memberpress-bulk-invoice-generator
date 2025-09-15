@@ -8,19 +8,13 @@ jQuery(document).ready(function($) {
         totalBatches: 0
     };
 
-    // Initialize date pickers with modern styling
+    // Initialize date pickers with default WordPress styling
     $('.mpbig-datepicker').datepicker({
         dateFormat: 'yy-mm-dd',
         changeMonth: true,
         changeYear: true,
         yearRange: '-10:+1',
-        showAnim: 'fadeIn',
-        beforeShow: function(input, inst) {
-            // Add custom styling to datepicker
-            setTimeout(function() {
-                $('.ui-datepicker').addClass('mpbig-datepicker-ui');
-            }, 10);
-        }
+        showAnim: 'fadeIn'
     });
 
     // Show/hide period options with smooth animation
@@ -118,6 +112,10 @@ jQuery(document).ready(function($) {
             return;
         }
 
+        // Clear any existing progress data and reset UI
+        batchProcessor.isProcessing = false;
+        stopProgressMonitoring();
+        
         // Show loading state
         $submitBtn.prop('disabled', true).addClass('mpbig-loading');
         $spinner.show();
@@ -162,7 +160,23 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function(xhr, status, error) {
-                showError(mpbig_ajax.error + ': ' + error);
+                var errorMessage = mpbig_ajax.error + ': ' + error;
+                
+                // Try to get more specific error message from response
+                if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                    errorMessage = xhr.responseJSON.data.message;
+                } else if (xhr.responseText) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.data && response.data.message) {
+                            errorMessage = response.data.message;
+                        }
+                    } catch (e) {
+                        // Use default error message
+                    }
+                }
+                
+                showError(errorMessage);
             }
         });
     });
@@ -175,6 +189,11 @@ jQuery(document).ready(function($) {
         var $results = $('#mpbig-results');
         var $resultsContent = $('#mpbig-results-content');
         var $form = $('#mpbig-form');
+        var $progressContainer = $('#mpbig-progress-container');
+
+        // Reset all processing states
+        batchProcessor.isProcessing = false;
+        stopProgressMonitoring();
 
         $resultsContent.html('<div class="mpbig-notice mpbig-notice-error"><p>' + message + '</p></div>');
         $results.slideDown(400).addClass('mpbig-fade-in');
@@ -183,6 +202,7 @@ jQuery(document).ready(function($) {
         $submitBtn.prop('disabled', false).removeClass('mpbig-loading');
         $spinner.hide();
         $progress.hide();
+        $progressContainer.hide();
         $form.removeClass('mpbig-loading');
     }
 
