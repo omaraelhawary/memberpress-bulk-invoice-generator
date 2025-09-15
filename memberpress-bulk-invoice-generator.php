@@ -3,7 +3,7 @@
 Plugin Name: MemberPress Bulk Invoice Generator
 Plugin URI: https://github.com/omaraelhawary/memberpress-bulk-invoice-generator
 Description: Generate bulk PDF invoices for MemberPress transactions with a user-friendly interface
-Version: 1.0.0
+Version: 1.0.1
 Author: Omar ElHawary
 Author URI: https://www.linkedin.com/in/omaraelhawary/
 Text Domain: memberpress-bulk-invoice-generator

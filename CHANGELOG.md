@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-01-26
+
+### Added
+- **Customer Email Filter**: Added ability to filter transactions by specific customer email address
+- **Enhanced UI Layout**: Improved form organization with distinct sections for better user experience
+- **Modern Datepicker Styling**: Implemented clean, professional datepicker design matching modern UI standards
+- **Better Error Handling**: Enhanced error recovery and user feedback when invalid data is entered
+- **Form Validation**: Added client-side and server-side validation for email format and date ranges
+
+### Improved
+- **UI/UX Enhancements**: 
+  - Reorganized form into logical sections (Generation Settings, Filter Settings, Output Settings, Action Section)
+  - Improved spacing and visual hierarchy
+  - Better alignment of form elements
+  - Centered and properly sized "Generate Invoices" button
+  - Removed unnecessary frames around action buttons
+- **Error Recovery**: Fixed issue where plugin would get stuck showing "No progress data found"
+- **Date Validation**: Added proper date format validation and range checking
+- **Transaction Counting**: Improved accuracy to match MemberPress default behavior (excludes confirmation and failed transactions)
+
+### Fixed
+- **UI Stuck Issues**: Resolved problem where invalid data entry would cause the interface to freeze
+- **Progress State Management**: Better handling of processing states and error recovery
+- **Datepicker Overlap**: Fixed datepicker positioning and z-index issues
+- **Form Layout**: Improved responsive design and element alignment
+
+### Technical Improvements
+- Enhanced AJAX error handling with try-catch blocks
+- Better state management for batch processing
+- Improved form validation with specific error messages
+- Enhanced caching and performance optimization
+
 ## [1.0.0] - 2025-01-26
 
 ### Added
