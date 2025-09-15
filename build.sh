@@ -47,13 +47,13 @@ if [ $? -eq 0 ]; then
     
     # Create ZIP file
     cd release
-    rm -f memberpress-bulk-invoice-generator-v1.0.0.zip
-    zip -r memberpress-bulk-invoice-generator-v1.0.0.zip memberpress-bulk-invoice-generator/
+    rm -f memberpress-bulk-invoice-generator.zip
+    zip -r memberpress-bulk-invoice-generator.zip memberpress-bulk-invoice-generator/
     
     if [ $? -eq 0 ]; then
         echo "✅ Release ZIP created successfully!"
-        echo "📁 Location: release/memberpress-bulk-invoice-generator-v1.0.0.zip"
-        echo "📏 Size: $(ls -lh memberpress-bulk-invoice-generator-v1.0.0.zip | awk '{print $5}')"
+        echo "📁 Location: release/memberpress-bulk-invoice-generator.zip"
+        echo "📏 Size: $(ls -lh memberpress-bulk-invoice-generator.zip | awk '{print $5}')"
         echo ""
         echo "🎉 Ready for production and distribution!"
     else
