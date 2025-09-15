@@ -163,81 +163,115 @@ class MPBulkInvoiceGenerator {
         <h2><?php esc_html_e( 'Generate Invoices', 'memberpress-bulk-invoice-generator' ); ?></h2>
         
         <form id="mpbig-form">
-          <div class="mpbig-form-group">
-            <label for="mpbig-type"><?php esc_html_e( 'Generation Type', 'memberpress-bulk-invoice-generator' ); ?></label>
-            <select id="mpbig-type" name="type" class="mpbig-form-control mpbig-select">
-              <option value="all"><?php esc_html_e( 'Generate All Invoices', 'memberpress-bulk-invoice-generator' ); ?></option>
-              <option value="period"><?php esc_html_e( 'Generate Invoices for Specific Period', 'memberpress-bulk-invoice-generator' ); ?></option>
-            </select>
-          </div>
-          
-          <div class="mpbig-date-row" id="mpbig-period-options" style="display: none;">
-            <div class="mpbig-form-group">
-              <label for="mpbig-start-date"><?php esc_html_e( 'Start Date', 'memberpress-bulk-invoice-generator' ); ?></label>
-              <input type="text" id="mpbig-start-date" name="start_date" class="mpbig-form-control mpbig-date-input mpbig-datepicker" placeholder="YYYY-MM-DD" />
+          <!-- Generation Settings Section -->
+          <div class="mpbig-form-section">
+            <h3 class="mpbig-section-title"><?php esc_html_e( 'Generation Settings', 'memberpress-bulk-invoice-generator' ); ?></h3>
+            
+            <div class="mpbig-form-row">
+              <div class="mpbig-form-group mpbig-form-group-full">
+                <label for="mpbig-type"><?php esc_html_e( 'Generation Type', 'memberpress-bulk-invoice-generator' ); ?></label>
+                <select id="mpbig-type" name="type" class="mpbig-form-control mpbig-select">
+                  <option value="all"><?php esc_html_e( 'Generate All Invoices', 'memberpress-bulk-invoice-generator' ); ?></option>
+                  <option value="period"><?php esc_html_e( 'Generate Invoices for Specific Period', 'memberpress-bulk-invoice-generator' ); ?></option>
+                </select>
+              </div>
             </div>
             
-            <div class="mpbig-form-group">
-              <label for="mpbig-end-date"><?php esc_html_e( 'End Date', 'memberpress-bulk-invoice-generator' ); ?></label>
-              <input type="text" id="mpbig-end-date" name="end_date" class="mpbig-form-control mpbig-date-input mpbig-datepicker" placeholder="YYYY-MM-DD" />
-            </div>
-          </div>
-          
-          <div class="mpbig-form-group">
-            <label><?php esc_html_e( 'Membership Filter', 'memberpress-bulk-invoice-generator' ); ?></label>
-            <select name="membership_id" class="mpbig-form-control mpbig-select">
-              <option value=""><?php esc_html_e( 'All Memberships', 'memberpress-bulk-invoice-generator' ); ?></option>
-              <?php
-              $memberships = get_posts( array(
-                'post_type' => 'memberpressproduct',
-                'numberposts' => -1,
-                'post_status' => 'publish',
-                'orderby' => 'title',
-                'order' => 'ASC'
-              ) );
+            <div class="mpbig-form-row" id="mpbig-period-options" style="display: none;">
+              <div class="mpbig-form-group mpbig-form-group-half">
+                <label for="mpbig-start-date"><?php esc_html_e( 'Start Date', 'memberpress-bulk-invoice-generator' ); ?></label>
+                <input type="text" id="mpbig-start-date" name="start_date" class="mpbig-form-control mpbig-date-input mpbig-datepicker" placeholder="YYYY-MM-DD" />
+              </div>
               
-              foreach ( $memberships as $membership ) {
-                echo '<option value="' . esc_attr( $membership->ID ) . '">' . esc_html( $membership->post_title ) . '</option>';
-              }
-              ?>
-            </select>
-          </div>
-
-          <div class="mpbig-form-group">
-            <label><?php esc_html_e( 'Transaction Status', 'memberpress-bulk-invoice-generator' ); ?></label>
-            <div class="mpbig-checkbox-group">
-              <div class="mpbig-checkbox-item">
-                <input type="checkbox" name="status[]" value="complete" id="status-complete" checked />
-                <label for="status-complete"><?php esc_html_e( 'Complete', 'memberpress-bulk-invoice-generator' ); ?></label>
-              </div>
-              <div class="mpbig-checkbox-item">
-                <input type="checkbox" name="status[]" value="pending" id="status-pending" />
-                <label for="status-pending"><?php esc_html_e( 'Pending', 'memberpress-bulk-invoice-generator' ); ?></label>
-              </div>
-              <div class="mpbig-checkbox-item">
-                <input type="checkbox" name="status[]" value="refunded" id="status-refunded" checked />
-                <label for="status-refunded"><?php esc_html_e( 'Refunded', 'memberpress-bulk-invoice-generator' ); ?></label>
+              <div class="mpbig-form-group mpbig-form-group-half">
+                <label for="mpbig-end-date"><?php esc_html_e( 'End Date', 'memberpress-bulk-invoice-generator' ); ?></label>
+                <input type="text" id="mpbig-end-date" name="end_date" class="mpbig-form-control mpbig-date-input mpbig-datepicker" placeholder="YYYY-MM-DD" />
               </div>
             </div>
           </div>
 
-          <div class="mpbig-form-group">
-            <div class="mpbig-checkbox-item">
-              <input type="checkbox" id="mpbig-create-zip" name="create_zip" value="1" checked />
-              <label for="mpbig-create-zip"><?php esc_html_e( 'Automatically create a ZIP file containing all generated PDFs', 'memberpress-bulk-invoice-generator' ); ?></label>
+          <!-- Filter Settings Section -->
+          <div class="mpbig-form-section">
+            <h3 class="mpbig-section-title"><?php esc_html_e( 'Filter Settings', 'memberpress-bulk-invoice-generator' ); ?></h3>
+            
+            <div class="mpbig-form-row">
+              <div class="mpbig-form-group mpbig-form-group-half">
+                <label><?php esc_html_e( 'Membership Filter', 'memberpress-bulk-invoice-generator' ); ?></label>
+                <select name="membership_id" class="mpbig-form-control mpbig-select">
+                  <option value=""><?php esc_html_e( 'All Memberships', 'memberpress-bulk-invoice-generator' ); ?></option>
+                  <?php
+                  $memberships = get_posts( array(
+                    'post_type' => 'memberpressproduct',
+                    'numberposts' => -1,
+                    'post_status' => 'publish',
+                    'orderby' => 'title',
+                    'order' => 'ASC'
+                  ) );
+                  
+                  foreach ( $memberships as $membership ) {
+                    echo '<option value="' . esc_attr( $membership->ID ) . '">' . esc_html( $membership->post_title ) . '</option>';
+                  }
+                  ?>
+                </select>
+              </div>
+
+              <div class="mpbig-form-group mpbig-form-group-half">
+                <label for="mpbig-customer-email"><?php esc_html_e( 'Customer Email Filter', 'memberpress-bulk-invoice-generator' ); ?></label>
+                <input type="email" id="mpbig-customer-email" name="customer_email" class="mpbig-form-control" placeholder="<?php esc_attr_e( 'Enter customer email address (optional)', 'memberpress-bulk-invoice-generator' ); ?>" />
+                <small class="mpbig-form-help"><?php esc_html_e( 'Leave empty to include all customers. Enter a specific email to filter transactions for that customer only.', 'memberpress-bulk-invoice-generator' ); ?></small>
+              </div>
+            </div>
+
+            <div class="mpbig-form-row">
+              <div class="mpbig-form-group mpbig-form-group-full">
+                <label><?php esc_html_e( 'Transaction Status', 'memberpress-bulk-invoice-generator' ); ?></label>
+                <div class="mpbig-checkbox-group">
+                  <div class="mpbig-checkbox-item">
+                    <input type="checkbox" name="status[]" value="complete" id="status-complete" checked />
+                    <label for="status-complete"><?php esc_html_e( 'Complete', 'memberpress-bulk-invoice-generator' ); ?></label>
+                  </div>
+                  <div class="mpbig-checkbox-item">
+                    <input type="checkbox" name="status[]" value="pending" id="status-pending" />
+                    <label for="status-pending"><?php esc_html_e( 'Pending', 'memberpress-bulk-invoice-generator' ); ?></label>
+                  </div>
+                  <div class="mpbig-checkbox-item">
+                    <input type="checkbox" name="status[]" value="refunded" id="status-refunded" checked />
+                    <label for="status-refunded"><?php esc_html_e( 'Refunded', 'memberpress-bulk-invoice-generator' ); ?></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Output Settings Section -->
+          <div class="mpbig-form-section">
+            <h3 class="mpbig-section-title"><?php esc_html_e( 'Output Settings', 'memberpress-bulk-invoice-generator' ); ?></h3>
+            
+            <div class="mpbig-form-row">
+              <div class="mpbig-form-group mpbig-form-group-full">
+                <div class="mpbig-checkbox-item mpbig-checkbox-item-large">
+                  <input type="checkbox" id="mpbig-create-zip" name="create_zip" value="1" checked />
+                  <label for="mpbig-create-zip"><?php esc_html_e( 'Automatically create a ZIP file containing all generated PDFs', 'memberpress-bulk-invoice-generator' ); ?></label>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div class="mpbig-form-group">
-            <button type="submit" class="mpbig-button mpbig-button-primary" id="mpbig-generate">
-              <span class="mpbig-spinner" id="mpbig-spinner" style="display: none;"></span>
-              <?php esc_html_e( 'Generate Invoices', 'memberpress-bulk-invoice-generator' ); ?>
-            </button>
-            <span id="mpbig-progress" style="display: none;">
-              <span id="mpbig-progress-text"></span>
-            </span>
+          <!-- Action Section -->
+          <div class="mpbig-form-section mpbig-form-section-action">
+            <div class="mpbig-form-row">
+              <div class="mpbig-form-group mpbig-form-group-full">
+                <button type="submit" class="mpbig-button mpbig-button-primary mpbig-button-large" id="mpbig-generate">
+                  <span class="mpbig-spinner" id="mpbig-spinner" style="display: none;"></span>
+                  <?php esc_html_e( 'Generate Invoices', 'memberpress-bulk-invoice-generator' ); ?>
+                </button>
+                <span id="mpbig-progress" style="display: none;">
+                  <span id="mpbig-progress-text"></span>
+                </span>
+              </div>
+            </div>
           </div>
-                </form>
+        </form>
       </div>
 
       <!-- Progress Card -->
@@ -391,6 +425,7 @@ class MPBulkInvoiceGenerator {
     $statuses = isset( $_POST['status'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['status'] ) ) : array( 'complete', 'pending', 'refunded' );
     $create_zip = isset( $_POST['create_zip'] ) && $_POST['create_zip'] === '1';
     $membership_id = isset( $_POST['membership_id'] ) ? intval( $_POST['membership_id'] ) : 0;
+    $customer_email = isset( $_POST['customer_email'] ) ? sanitize_email( wp_unslash( $_POST['customer_email'] ) ) : '';
     
     $start_date = '';
     $end_date = '';
@@ -401,7 +436,7 @@ class MPBulkInvoiceGenerator {
     }
 
     // Get all transaction IDs that match criteria
-    $txn_ids = $this->get_transaction_ids( $type, $statuses, $start_date, $end_date, $membership_id );
+    $txn_ids = $this->get_transaction_ids( $type, $statuses, $start_date, $end_date, $membership_id, $customer_email );
 
     if ( empty( $txn_ids ) ) {
       wp_send_json( array(
@@ -730,9 +765,9 @@ class MPBulkInvoiceGenerator {
   /**
    * Get transaction IDs based on criteria
    */
-  private function get_transaction_ids( $type, $statuses, $start_date = '', $end_date = '', $membership_id = 0 ) {
+  private function get_transaction_ids( $type, $statuses, $start_date = '', $end_date = '', $membership_id = 0, $customer_email = '' ) {
     // Create cache key based on parameters
-    $cache_key = 'mpbig_transaction_ids_' . md5( serialize( array( $type, $statuses, $start_date, $end_date, $membership_id ) ) );
+    $cache_key = 'mpbig_transaction_ids_' . md5( serialize( array( $type, $statuses, $start_date, $end_date, $membership_id, $customer_email ) ) );
     
     // Check cache first
     $txn_ids = wp_cache_get( $cache_key, 'mpbig_transactions' );
@@ -753,22 +788,35 @@ class MPBulkInvoiceGenerator {
         $status_placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
         
         // Build query parts - use sprintf for table name since it's validated
-        $base_query = sprintf( "SELECT id FROM `%s` WHERE status IN (%s)", $table, $status_placeholders );
+        $base_query = sprintf( "SELECT t.id FROM `%s` t", $table );
+        
+        // Add user table join if customer email filter is specified
+        if ( ! empty( $customer_email ) ) {
+          $base_query .= " INNER JOIN {$wpdb->users} u ON t.user_id = u.ID";
+        }
+        
+        $base_query .= sprintf( " WHERE t.status IN (%s)", $status_placeholders );
         $query_args = $statuses;
 
         if ( $type === 'period' && ! empty( $start_date ) && ! empty( $end_date ) ) {
-          $base_query .= " AND created_at > %s AND created_at < %s";
+          $base_query .= " AND t.created_at > %s AND t.created_at < %s";
           $query_args[] = $start_date;
           $query_args[] = $end_date;
         }
 
         // Add membership filter if specified
         if ( $membership_id > 0 ) {
-          $base_query .= " AND product_id = %d";
+          $base_query .= " AND t.product_id = %d";
           $query_args[] = $membership_id;
         }
 
-        $base_query .= " ORDER BY created_at ASC";
+        // Add customer email filter if specified
+        if ( ! empty( $customer_email ) ) {
+          $base_query .= " AND u.user_email = %s";
+          $query_args[] = $customer_email;
+        }
+
+        $base_query .= " ORDER BY t.created_at ASC";
 
         // Direct database query is necessary here for transaction ID retrieval
         // WordPress doesn't provide built-in functions for MemberPress transaction queries

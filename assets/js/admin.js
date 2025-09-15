@@ -33,6 +33,12 @@ jQuery(document).ready(function($) {
         }
     });
 
+    // Email validation helper function
+    function isValidEmail(email) {
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
     // Enhanced form validation with better UX
     function validateForm() {
         var errors = [];
@@ -54,6 +60,12 @@ jQuery(document).ready(function($) {
         var selectedStatuses = $('input[name="status[]"]:checked').length;
         if (selectedStatuses === 0) {
             errors.push('Please select at least one transaction status.');
+        }
+
+        // Check customer email format if provided
+        var customerEmail = $('#mpbig-customer-email').val().trim();
+        if (customerEmail && !isValidEmail(customerEmail)) {
+            errors.push('Please enter a valid email address for the customer filter.');
         }
 
         return errors;
