@@ -8,8 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.2]
 
 ### Changed
-- Version bump to 1.0.2
 - Fix Blank Screen
+
+### Improved
+- **Batch Processing**: Enhanced batch processing system for more efficient invoice generation
+- **Batch Size Management**: Improved batch size handling and progress tracking during bulk operations
 
 ## [1.0.1]
 
