@@ -20,10 +20,17 @@ jQuery(document).ready(function($) {
     // Show/hide period options with smooth animation
     $('#mpbig-type').on('change', function() {
         var type = $(this).val();
+        var $periodOptions = $('#mpbig-period-options');
         if (type === 'period') {
-            $('#mpbig-period-options').slideDown(300).addClass('mpbig-fade-in');
+            $periodOptions.removeClass('mpbig-hidden').addClass('mpbig-slide-down mpbig-visible mpbig-fade-in');
+            // Force reflow to trigger animation
+            $periodOptions[0].offsetHeight;
+            $periodOptions.addClass('mpbig-visible');
         } else {
-            $('#mpbig-period-options').slideUp(300);
+            $periodOptions.removeClass('mpbig-visible').addClass('mpbig-slide-up');
+            setTimeout(function() {
+                $periodOptions.addClass('mpbig-hidden').removeClass('mpbig-slide-down mpbig-slide-up');
+            }, 300);
         }
     });
 
@@ -118,11 +125,11 @@ jQuery(document).ready(function($) {
         
         // Show loading state
         $submitBtn.prop('disabled', true).addClass('mpbig-loading');
-        $spinner.show();
-        $progress.show();
+        $spinner.removeClass('mpbig-hidden');
+        $progress.removeClass('mpbig-hidden');
         $progressText.text(mpbig_ajax.generating);
-        $results.hide();
-        $progressContainer.hide();
+        $results.addClass('mpbig-hidden');
+        $progressContainer.addClass('mpbig-hidden');
 
         // Add loading animation to the form
         $form.addClass('mpbig-loading');
@@ -147,7 +154,10 @@ jQuery(document).ready(function($) {
                     batchProcessor.currentBatch = 0;
                     
                     // Show progress container with animation
-                    $progressContainer.slideDown(400).addClass('mpbig-fade-in');
+                    $progressContainer.removeClass('mpbig-hidden').addClass('mpbig-slide-down mpbig-fade-in');
+                    // Force reflow to trigger animation
+                    $progressContainer[0].offsetHeight;
+                    $progressContainer.addClass('mpbig-visible');
                     updateProgressBar(0, response.total);
                     
                     // Start progress monitoring
@@ -196,13 +206,16 @@ jQuery(document).ready(function($) {
         stopProgressMonitoring();
 
         $resultsContent.html('<div class="mpbig-notice mpbig-notice-error"><p>' + message + '</p></div>');
-        $results.slideDown(400).addClass('mpbig-fade-in');
+        $results.removeClass('mpbig-hidden').addClass('mpbig-slide-down mpbig-fade-in');
+        // Force reflow to trigger animation
+        $results[0].offsetHeight;
+        $results.addClass('mpbig-visible');
         
         // Reset button state
         $submitBtn.prop('disabled', false).removeClass('mpbig-loading');
-        $spinner.hide();
-        $progress.hide();
-        $progressContainer.hide();
+        $spinner.addClass('mpbig-hidden');
+        $progress.addClass('mpbig-hidden');
+        $progressContainer.addClass('mpbig-hidden');
         $form.removeClass('mpbig-loading');
     }
 
@@ -246,13 +259,19 @@ jQuery(document).ready(function($) {
                         }
                         
                         $resultsContent.html(message);
-                        $results.slideDown(400).addClass('mpbig-fade-in');
+                        $results.removeClass('mpbig-hidden').addClass('mpbig-slide-down mpbig-fade-in');
+                        // Force reflow to trigger animation
+                        $results[0].offsetHeight;
+                        $results.addClass('mpbig-visible');
                         
                         // Reset button state
                         $submitBtn.prop('disabled', false).removeClass('mpbig-loading');
-                        $spinner.hide();
-                        $('#mpbig-progress').hide();
-                        $progressContainer.slideUp(400);
+                        $spinner.addClass('mpbig-hidden');
+                        $('#mpbig-progress').addClass('mpbig-hidden');
+                        $progressContainer.removeClass('mpbig-visible').addClass('mpbig-slide-up');
+                        setTimeout(function() {
+                            $progressContainer.addClass('mpbig-hidden').removeClass('mpbig-slide-down mpbig-slide-up');
+                        }, 400);
                         $form.removeClass('mpbig-loading');
                         
                         // Create ZIP file if requested
@@ -286,8 +305,8 @@ jQuery(document).ready(function($) {
         var $spinner = $('#mpbig-spinner');
         
         $progressText.text(mpbig_ajax.creating_zip);
-        $progress.show();
-        $spinner.show();
+        $progress.removeClass('mpbig-hidden');
+        $spinner.removeClass('mpbig-hidden');
 
         var formData = new FormData();
         formData.append('action', 'mpbig_create_zip');
@@ -300,8 +319,8 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
-                $progress.hide();
-                $spinner.hide();
+                $progress.addClass('mpbig-hidden');
+                $spinner.addClass('mpbig-hidden');
                 
                 if (response.success) {
                     var zipMessage = '<div class="mpbig-notice mpbig-notice-success"><p>' + response.message + '</p>';
@@ -314,8 +333,8 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function(xhr, status, error) {
-                $progress.hide();
-                $spinner.hide();
+                $progress.addClass('mpbig-hidden');
+                $spinner.addClass('mpbig-hidden');
                 var zipMessage = '<div class="mpbig-notice mpbig-notice-error"><p>' + mpbig_ajax.zip_error + ': ' + error + '</p></div>';
                 $resultsContent.append(zipMessage);
             }
@@ -362,7 +381,8 @@ jQuery(document).ready(function($) {
     function updateProgressBar(processed, total) {
         var percentage = total > 0 ? Math.round((processed / total) * 100) : 0;
         
-        $('#mpbig-progress-fill').css('width', percentage + '%');
+        // Use CSS custom property for dynamic width
+        $('#mpbig-progress-fill')[0].style.setProperty('--progress-width', percentage + '%');
         $('#mpbig-progress-current').text(processed);
         $('#mpbig-progress-total').text(total);
         $('#mpbig-progress-percentage').text(percentage + '%');
@@ -417,7 +437,7 @@ jQuery(document).ready(function($) {
         
         // Show loading state
         $button.prop('disabled', true).addClass('mpbig-loading');
-        $spinner.show();
+        $spinner.removeClass('mpbig-hidden');
 
         var formData = new FormData();
         formData.append('action', 'mpbig_download_files');
@@ -431,7 +451,7 @@ jQuery(document).ready(function($) {
             contentType: false,
             success: function(response) {
                 $button.prop('disabled', false).removeClass('mpbig-loading');
-                $spinner.hide();
+                $spinner.addClass('mpbig-hidden');
                 
                 if (response.success) {
                     // Create download link and trigger download
@@ -453,9 +473,10 @@ jQuery(document).ready(function($) {
                     
                     // Remove message after 5 seconds
                     setTimeout(function() {
-                        $('.mpbig-notice-success').fadeOut(300, function() {
-                            $(this).remove();
-                        });
+                        $('.mpbig-notice-success').addClass('mpbig-fade-out mpbig-hidden');
+                        setTimeout(function() {
+                            $('.mpbig-notice-success').remove();
+                        }, 300);
                     }, 5000);
                 } else {
                     // Show error message
@@ -470,7 +491,7 @@ jQuery(document).ready(function($) {
             },
             error: function(xhr, status, error) {
                 $button.prop('disabled', false).removeClass('mpbig-loading');
-                $spinner.hide();
+                $spinner.addClass('mpbig-hidden');
                 
                 var message = '<div class="mpbig-notice mpbig-notice-error"><p>Error: ' + error + '</p></div>';
                 $('.mpbig-file-management').after(message);
@@ -489,7 +510,7 @@ jQuery(document).ready(function($) {
         
         // Show loading state
         $button.prop('disabled', true).addClass('mpbig-loading');
-        $spinner.show();
+        $spinner.removeClass('mpbig-hidden');
 
         var formData = new FormData();
         formData.append('action', 'mpbig_empty_folder');
@@ -503,7 +524,7 @@ jQuery(document).ready(function($) {
             contentType: false,
             success: function(response) {
                 $button.prop('disabled', false).removeClass('mpbig-loading');
-                $spinner.hide();
+                $spinner.addClass('mpbig-hidden');
                 
                 if (response.success) {
                     // Show success message
@@ -521,9 +542,10 @@ jQuery(document).ready(function($) {
                     
                     // Remove message after 5 seconds
                     setTimeout(function() {
-                        $('.mpbig-notice-success').fadeOut(300, function() {
-                            $(this).remove();
-                        });
+                        $('.mpbig-notice-success').addClass('mpbig-fade-out mpbig-hidden');
+                        setTimeout(function() {
+                            $('.mpbig-notice-success').remove();
+                        }, 300);
                     }, 5000);
                 } else {
                     // Show error message
@@ -538,7 +560,7 @@ jQuery(document).ready(function($) {
             },
             error: function(xhr, status, error) {
                 $button.prop('disabled', false).removeClass('mpbig-loading');
-                $spinner.hide();
+                $spinner.addClass('mpbig-hidden');
                 
                 var message = '<div class="mpbig-notice mpbig-notice-error"><p>Error: ' + error + '</p></div>';
                 $('.mpbig-file-management').after(message);

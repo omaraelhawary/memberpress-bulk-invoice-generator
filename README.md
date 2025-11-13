@@ -186,6 +186,27 @@ Only transactions with these statuses will be processed:
    - Check write permissions for the uploads directory
    - Verify sufficient disk space for ZIP file creation
 
+## Developer Hooks
+
+The plugin provides a filter hook for customization:
+
+### Filter Hooks
+
+**`mpbig_batch_size`** - Modify the number of transactions processed per batch
+```php
+add_filter( 'mpbig_batch_size', function( $batch_size ) {
+    return 25; // Process 25 transactions per batch instead of 10
+});
+```
+
+**Example usage for better performance:**
+```php
+// Increase batch size for faster processing on powerful servers
+add_filter( 'mpbig_batch_size', function( $batch_size ) {
+    return 50; // This will significantly reduce processing time for large datasets
+});
+```
+
 ## Support
 
 For support and feature requests, please contact the plugin developer.

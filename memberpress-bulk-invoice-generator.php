@@ -69,6 +69,9 @@ class MPBulkInvoiceGenerator {
     
     // Clean up old progress data
     add_action( 'wp_scheduled_delete', array( $this, 'cleanup_old_progress' ) );
+    
+    // Apply filter to batch size
+    $this->batch_size = apply_filters( 'mpbig_batch_size', $this->batch_size );
   }
 
   /**
@@ -107,7 +110,7 @@ class MPBulkInvoiceGenerator {
       'generating' => __( 'Generating invoices...', 'memberpress-bulk-invoice-generator' ),
       'success' => __( 'Invoices generated successfully!', 'memberpress-bulk-invoice-generator' ),
       'error' => __( 'Error generating invoices.', 'memberpress-bulk-invoice-generator' ),
-      'batch_size' => $this->batch_size,
+      'batch_size' => $this->get_batch_size(),
       'creating_zip' => __( 'Creating ZIP file...', 'memberpress-bulk-invoice-generator' ),
       'zip_created' => __( 'ZIP file created successfully!', 'memberpress-bulk-invoice-generator' ),
       'zip_error' => __( 'Error creating ZIP file.', 'memberpress-bulk-invoice-generator' )
@@ -182,7 +185,7 @@ class MPBulkInvoiceGenerator {
               </div>
             </div>
             
-            <div class="mpbig-form-row" id="mpbig-period-options" style="display: none;">
+            <div class="mpbig-form-row mpbig-hidden" id="mpbig-period-options">
               <div class="mpbig-form-group mpbig-form-group-half">
                 <label for="mpbig-start-date"><?php esc_html_e( 'Start Date', 'memberpress-bulk-invoice-generator' ); ?></label>
                 <input type="text" id="mpbig-start-date" name="start_date" class="mpbig-form-control mpbig-date-input mpbig-datepicker" placeholder="YYYY-MM-DD" />
@@ -267,10 +270,10 @@ class MPBulkInvoiceGenerator {
             <div class="mpbig-form-row">
               <div class="mpbig-form-group mpbig-form-group-full">
                 <button type="submit" class="mpbig-button mpbig-button-primary mpbig-button-large" id="mpbig-generate">
-                  <span class="mpbig-spinner" id="mpbig-spinner" style="display: none;"></span>
+                  <span class="mpbig-spinner mpbig-hidden" id="mpbig-spinner"></span>
                   <?php esc_html_e( 'Generate Invoices', 'memberpress-bulk-invoice-generator' ); ?>
                 </button>
-                <span id="mpbig-progress" style="display: none;">
+                <span id="mpbig-progress" class="mpbig-hidden">
                   <span id="mpbig-progress-text"></span>
                 </span>
               </div>
@@ -280,7 +283,7 @@ class MPBulkInvoiceGenerator {
       </div>
 
       <!-- Progress Card -->
-      <div class="mpbig-card mpbig-progress-container" id="mpbig-progress-container" style="display: none;">
+      <div class="mpbig-card mpbig-progress-container mpbig-hidden" id="mpbig-progress-container">
         <div class="mpbig-progress-header">
           <h2><?php esc_html_e( 'Generation Progress', 'memberpress-bulk-invoice-generator' ); ?></h2>
         </div>
@@ -295,7 +298,7 @@ class MPBulkInvoiceGenerator {
       </div>
 
       <!-- Results Card -->
-      <div class="mpbig-card mpbig-results" id="mpbig-results" style="display: none;">
+      <div class="mpbig-card mpbig-results mpbig-hidden" id="mpbig-results">
         <h2><?php esc_html_e( 'Generation Results', 'memberpress-bulk-invoice-generator' ); ?></h2>
         <div id="mpbig-results-content"></div>
       </div>
@@ -331,11 +334,11 @@ class MPBulkInvoiceGenerator {
         
         <div class="mpbig-file-actions">
           <button type="button" class="mpbig-button mpbig-button-primary" id="mpbig-download-files" <?php echo $file_count > 0 ? '' : 'disabled'; ?>>
-            <span class="mpbig-spinner" id="mpbig-download-spinner" style="display: none;"></span>
+            <span class="mpbig-spinner mpbig-hidden" id="mpbig-download-spinner"></span>
             <?php esc_html_e( 'Download All Files', 'memberpress-bulk-invoice-generator' ); ?>
           </button>
           <button type="button" class="mpbig-button mpbig-button-secondary" id="mpbig-empty-folder">
-            <span class="mpbig-spinner" id="mpbig-empty-spinner" style="display: none;"></span>
+            <span class="mpbig-spinner mpbig-hidden" id="mpbig-empty-spinner"></span>
             <?php esc_html_e( 'Empty PDF Folder', 'memberpress-bulk-invoice-generator' ); ?>
           </button>
           <p class="mpbig-file-warning">
@@ -487,7 +490,7 @@ class MPBulkInvoiceGenerator {
       // translators: %d is the number of transactions to process
       'message' => sprintf( __( 'Starting batch processing for %d transactions...', 'memberpress-bulk-invoice-generator' ), count( $txn_ids ) ),
       'total' => count( $txn_ids ),
-      'batch_size' => $this->batch_size
+      'batch_size' => $this->get_batch_size()
     ) );
     
     } catch ( Exception $e ) {
@@ -525,7 +528,7 @@ class MPBulkInvoiceGenerator {
     }
 
     $invoices_ctrl = new MePdfInvoicesCtrl();
-    $batch_size = $this->batch_size;
+    $batch_size = $this->get_batch_size();
     $processed_in_batch = 0;
     $successful_in_batch = 0;
     $errors_in_batch = array();
@@ -911,6 +914,23 @@ class MPBulkInvoiceGenerator {
         delete_option( $this->progress_key );
       }
     }
+  }
+
+  /**
+   * Get the current batch size (allows for dynamic batch size)
+   * 
+   * Filter: mpbig_batch_size
+   * 
+   * Usage example:
+   * add_filter( 'mpbig_batch_size', function( $batch_size ) {
+   *     return 25; // Process 25 transactions per batch instead of 10
+   * });
+   * 
+   * @param int $batch_size The current batch size
+   * @return int The filtered batch size
+   */
+  public function get_batch_size() {
+    return apply_filters( 'mpbig_batch_size', $this->batch_size );
   }
 
   /**

@@ -554,7 +554,7 @@
 .mpbig-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #0073aa 0%, #005a87 50%, #004466 100%);
-    width: 0%;
+    width: var(--progress-width, 0%);
     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 14px;
     position: relative;
@@ -972,16 +972,11 @@
 }
 
 
-/* Page Load Animation */
-.mpbig-container {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.mpbig-loaded {
+/* Page Load Animation - Only animate if JavaScript adds the class */
+.mpbig-container.mpbig-loaded {
     opacity: 1;
     transform: translateY(0);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Enhanced Loading States */
@@ -1049,6 +1044,41 @@
 .mpbig-mb-0 { margin-bottom: 0; }
 .mpbig-mt-16 { margin-top: 16px; }
 .mpbig-mb-16 { margin-bottom: 16px; }
-.mpbig-hidden { display: none; }
-.mpbig-visible { display: block; }
+.mpbig-hidden { display: none !important; }
+.mpbig-visible { display: block !important; }
+
+/* Slide animation classes for CSP compliance */
+.mpbig-slide-down {
+    display: block !important;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+}
+
+.mpbig-slide-down.mpbig-visible {
+    max-height: 2000px;
+    transition: max-height 0.4s ease-in;
+}
+
+.mpbig-slide-up {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+}
+
+.mpbig-slide-up.mpbig-hidden {
+    max-height: 0;
+    transition: max-height 0.4s ease-in;
+}
+
+/* Fade animation classes */
+.mpbig-fade-out {
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+}
+
+.mpbig-fade-out.mpbig-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
 
