@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="MemberPress Bulk Invoice Generator">
-	<description>WordPress Coding Standards for MemberPress Bulk Invoice Generator</description>
+<ruleset name="PDF Invoice Generator for MemberPress">
+	<description>WordPress Coding Standards for PDF Invoice Generator for MemberPress</description>
 
 	<!-- What to scan -->
 	<file>.</file>
@@ -66,7 +66,7 @@
 	<!-- Allow for translator comments -->
 	<rule ref="WordPress.WP.I18n">
 		<properties>
-			<property name="text_domain" type="array" value="memberpress-bulk-invoice-generator"/>
+			<property name="text_domain" type="array" value="pdf-invoice-generator-for-memberpress"/>
 		</properties>
 	</rule>
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall script for MemberPress Bulk Invoice Generator
+ * Uninstall script for PDF Invoice Generator for MemberPress
  * 
  * This script runs when the plugin is deleted from WordPress.
  * It cleans up all plugin data, options, and generated files.
@@ -12,7 +12,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 // Check if we should clean up files
-$cleanup_files = get_option( 'mpbig_cleanup_files_on_uninstall', true );
+$cleanup_files = get_option( 'mpfig_cleanup_files_on_uninstall', true );
 
 if ( $cleanup_files ) {
     // Clean up generated PDF files
@@ -52,10 +52,10 @@ if ( $cleanup_files ) {
 
 // Clean up plugin options
 $options_to_delete = array(
-    'mpbig_progress',
-    'mpbig_cleanup_files_on_uninstall',
-    'mpbig_last_generation_time',
-    'mpbig_generation_stats'
+    'mpfig_progress',
+    'mpfig_cleanup_files_on_uninstall',
+    'mpfig_last_generation_time',
+    'mpfig_generation_stats'
 );
 
 foreach ( $options_to_delete as $option ) {
@@ -63,5 +63,5 @@ foreach ( $options_to_delete as $option ) {
 }
 
 // Clean up any transients
-delete_transient( 'mpbig_progress_data' );
-delete_transient( 'mpbig_generation_status' );
+delete_transient( 'mpfig_progress_data' );
+delete_transient( 'mpfig_generation_status' );

@@ -1,12 +1,12 @@
 <?php
 /*
-Plugin Name: MemberPress Bulk Invoice Generator
-Plugin URI: https://github.com/omaraelhawary/memberpress-bulk-invoice-generator
-Description: Generate bulk PDF invoices for MemberPress transactions with a user-friendly interface
+Plugin Name: PDF Invoice Generator for MemberPress
+Plugin URI: https://github.com/omaraelhawary/pdf-invoice-generator-for-memberpress
+Description: Generate PDF invoices for MemberPress transactions with a user-friendly interface
 Version: 1.0.2
 Author: Omar ElHawary
 Author URI: https://www.linkedin.com/in/omaraelhawary/
-Text Domain: memberpress-bulk-invoice-generator
+Text Domain: pdf-invoice-generator-for-memberpress
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 5.0
@@ -38,43 +38,44 @@ add_action( 'plugins_loaded', function() {
 	$plugin_data = get_plugin_data( __FILE__, false, false );
 
   // Define useful constants
-  define( 'MPBIG_VERSION', $plugin_data['Version'] ?? '1.0.0' );
-  define( 'MPBIG_SLUG', 'memberpress-bulk-invoice-generator' );
-  define( 'MPBIG_FILE', MPBIG_SLUG . '/memberpress-bulk-invoice-generator.php' );
-  define( 'MPBIG_PATH', plugin_dir_path( __FILE__ ) );
-  define( 'MPBIG_URL', plugin_dir_url( __FILE__ ) );
+  define( 'MPFIG_VERSION', $plugin_data['Version'] ?? '1.0.0' );
+  define( 'MPFIG_SLUG', 'pdf-invoice-generator-for-memberpress' );
+  define( 'MPFIG_FILE', MPFIG_SLUG . '/pdf-invoice-generator-for-memberpress.php' );
+  define( 'MPFIG_PATH', plugin_dir_path( __FILE__ ) );
+  define( 'MPFIG_URL', plugin_dir_url( __FILE__ ) );
+  define( 'MPFIG_ADMIN_SLUG', 'pdf-invoice-generator-for-memberpress' );
 
   // Run the plugin
-  new MPBulkInvoiceGenerator();
+  new MPPdfInvoiceGenerator();
 } );
 
 /**
  * Main plugin class
  */
-class MPBulkInvoiceGenerator {
+class MPPdfInvoiceGenerator {
 
   private $batch_size = 10; // Number of transactions to process per batch
-  private $progress_key = 'mpbig_progress';
+  private $progress_key = 'mpfig_progress';
 
   public function __construct() {
     add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
     add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-    add_action( 'wp_ajax_mpbig_generate_invoices', array( $this, 'ajax_generate_invoices' ) );
-    add_action( 'wp_ajax_mpbig_process_batch', array( $this, 'ajax_process_batch' ) );
-    add_action( 'wp_ajax_mpbig_create_zip', array( $this, 'ajax_create_zip' ) );
-    add_action( 'wp_ajax_mpbig_get_progress', array( $this, 'ajax_get_progress' ) );
-    add_action( 'wp_ajax_mpbig_empty_folder', array( $this, 'ajax_empty_folder' ) );
-    add_action( 'wp_ajax_mpbig_download_files', array( $this, 'ajax_download_files' ) );
+    add_action( 'wp_ajax_mpfig_generate_invoices', array( $this, 'ajax_generate_invoices' ) );
+    add_action( 'wp_ajax_mpfig_process_batch', array( $this, 'ajax_process_batch' ) );
+    add_action( 'wp_ajax_mpfig_create_zip', array( $this, 'ajax_create_zip' ) );
+    add_action( 'wp_ajax_mpfig_get_progress', array( $this, 'ajax_get_progress' ) );
+    add_action( 'wp_ajax_mpfig_empty_folder', array( $this, 'ajax_empty_folder' ) );
+    add_action( 'wp_ajax_mpfig_download_files', array( $this, 'ajax_download_files' ) );
     add_action( 'admin_notices', array( $this, 'admin_notices' ) );
     
     // Clean up old progress data on init (runs on every page load, but checks timestamp)
     add_action( 'init', array( $this, 'cleanup_old_progress' ) );
     // Also schedule a proper WordPress cron event for cleanup
-    add_action( 'mpbig_cleanup_progress', array( $this, 'cleanup_old_progress' ) );
+    add_action( 'mpfig_cleanup_progress', array( $this, 'cleanup_old_progress' ) );
     add_action( 'admin_init', array( $this, 'schedule_cleanup_event' ) );
     
     // Apply filter to batch size
-    $this->batch_size = apply_filters( 'mpbig_batch_size', $this->batch_size );
+    $this->batch_size = apply_filters( 'mpfig_batch_size', $this->batch_size );
   }
 
   /**
@@ -83,10 +84,10 @@ class MPBulkInvoiceGenerator {
   public function add_admin_menu() {
     add_submenu_page(
       'memberpress',
-      __( 'Bulk Invoice Generator', 'memberpress-bulk-invoice-generator' ),
-      __( 'Bulk Invoice Generator', 'memberpress-bulk-invoice-generator' ),
+__( 'PDF Invoices', 'pdf-invoice-generator-for-memberpress' ),
+    __( 'PDF Invoices', 'pdf-invoice-generator-for-memberpress' ),
       'manage_options',
-      'memberpress-bulk-invoice-generator',
+      MPFIG_ADMIN_SLUG,
       array( $this, 'admin_page' )
     );
   }
@@ -95,7 +96,7 @@ class MPBulkInvoiceGenerator {
    * Enqueue scripts and styles
    */
 	public function enqueue_scripts( $hook ) {
-		if ( 'memberpress_page_memberpress-bulk-invoice-generator' !== $hook ) {
+		if ( 'memberpress_page_' . MPFIG_ADMIN_SLUG !== $hook ) {
 			return;
 		}
 
@@ -105,18 +106,18 @@ class MPBulkInvoiceGenerator {
     $css_file = defined( 'WP_DEBUG' ) && WP_DEBUG ? 'assets/css/admin.css' : 'assets/css/admin.min.css';
     $js_file = defined( 'WP_DEBUG' ) && WP_DEBUG ? 'assets/js/admin.js' : 'assets/js/admin.min.js';
     
-    wp_enqueue_style( 'mpbig-admin', MPBIG_URL . $css_file, array(), MPBIG_VERSION );
-    wp_enqueue_script( 'mpbig-admin', MPBIG_URL . $js_file, array( 'jquery', 'jquery-ui-datepicker' ), MPBIG_VERSION, true );
-    wp_localize_script( 'mpbig-admin', 'mpbig_ajax', array(
+    wp_enqueue_style( 'mpfig-admin', MPFIG_URL . $css_file, array(), MPFIG_VERSION );
+    wp_enqueue_script( 'mpfig-admin', MPFIG_URL . $js_file, array( 'jquery', 'jquery-ui-datepicker' ), MPFIG_VERSION, true );
+    wp_localize_script( 'mpfig-admin', 'mpfig_ajax', array(
       'ajax_url' => admin_url( 'admin-ajax.php' ),
-      'nonce' => wp_create_nonce( 'mpbig_nonce' ),
-      'generating' => __( 'Generating invoices...', 'memberpress-bulk-invoice-generator' ),
-      'success' => __( 'Invoices generated successfully!', 'memberpress-bulk-invoice-generator' ),
-      'error' => __( 'Error generating invoices.', 'memberpress-bulk-invoice-generator' ),
+      'nonce' => wp_create_nonce( 'mpfig_nonce' ),
+      'generating' => __( 'Generating invoices...', 'pdf-invoice-generator-for-memberpress' ),
+      'success' => __( 'Invoices generated successfully!', 'pdf-invoice-generator-for-memberpress' ),
+      'error' => __( 'Error generating invoices.', 'pdf-invoice-generator-for-memberpress' ),
       'batch_size' => $this->get_batch_size(),
-      'creating_zip' => __( 'Creating ZIP file...', 'memberpress-bulk-invoice-generator' ),
-      'zip_created' => __( 'ZIP file created successfully!', 'memberpress-bulk-invoice-generator' ),
-      'zip_error' => __( 'Error creating ZIP file.', 'memberpress-bulk-invoice-generator' )
+      'creating_zip' => __( 'Creating ZIP file...', 'pdf-invoice-generator-for-memberpress' ),
+      'zip_created' => __( 'ZIP file created successfully!', 'pdf-invoice-generator-for-memberpress' ),
+      'zip_error' => __( 'Error creating ZIP file.', 'pdf-invoice-generator-for-memberpress' )
     ) );
   }
 
@@ -131,37 +132,37 @@ class MPBulkInvoiceGenerator {
     // Get transaction statistics
     $stats = $this->get_transaction_stats();
     ?>
-    <div class="wrap mpbig-container">
-      <h1><?php esc_html_e( 'MemberPress Bulk Invoice Generator', 'memberpress-bulk-invoice-generator' ); ?></h1>
+    <div class="wrap mpfig-container">
+      <h1><?php esc_html_e( 'PDF Invoice Generator for MemberPress', 'pdf-invoice-generator-for-memberpress' ); ?></h1>
       
-      <div class="mpbig-notice mpbig-notice-info">
-        <p><?php esc_html_e( 'This tool allows you to generate PDF invoices for MemberPress transactions in bulk. Make sure to download the generated files before running the process again, as they will be overwritten.', 'memberpress-bulk-invoice-generator' ); ?></p>
+      <div class="mpfig-notice mpfig-notice-info">
+        <p><?php esc_html_e( 'This tool allows you to generate PDF invoices for MemberPress transactions in bulk. Make sure to download the generated files before running the process again, as they will be overwritten.', 'pdf-invoice-generator-for-memberpress' ); ?></p>
       </div>
 
       <!-- Statistics Card -->
-      <div class="mpbig-card mpbig-stats">
-        <h2><?php esc_html_e( 'Transaction Statistics', 'memberpress-bulk-invoice-generator' ); ?></h2>
-        <div class="mpbig-stats-grid">
-          <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['total'] ); ?></span>
-            <span class="mpbig-stat-label"><?php esc_html_e( 'Total Transactions', 'memberpress-bulk-invoice-generator' ); ?></span>
+      <div class="mpfig-card mpfig-stats">
+        <h2><?php esc_html_e( 'Transaction Statistics', 'pdf-invoice-generator-for-memberpress' ); ?></h2>
+        <div class="mpfig-stats-grid">
+          <div class="mpfig-stat-item">
+            <span class="mpfig-stat-number"><?php echo number_format( (int) $stats['total'] ); ?></span>
+            <span class="mpfig-stat-label"><?php esc_html_e( 'Total Transactions', 'pdf-invoice-generator-for-memberpress' ); ?></span>
           </div>
-          <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['completed'] ); ?></span>
-            <span class="mpbig-stat-label"><?php esc_html_e( 'Completed', 'memberpress-bulk-invoice-generator' ); ?></span>
+          <div class="mpfig-stat-item">
+            <span class="mpfig-stat-number"><?php echo number_format( (int) $stats['completed'] ); ?></span>
+            <span class="mpfig-stat-label"><?php esc_html_e( 'Completed', 'pdf-invoice-generator-for-memberpress' ); ?></span>
           </div>
-          <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['pending'] ); ?></span>
-            <span class="mpbig-stat-label"><?php esc_html_e( 'Pending', 'memberpress-bulk-invoice-generator' ); ?></span>
+          <div class="mpfig-stat-item">
+            <span class="mpfig-stat-number"><?php echo number_format( (int) $stats['pending'] ); ?></span>
+            <span class="mpfig-stat-label"><?php esc_html_e( 'Pending', 'pdf-invoice-generator-for-memberpress' ); ?></span>
           </div>
-          <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['refunded'] ); ?></span>
-            <span class="mpbig-stat-label"><?php esc_html_e( 'Refunded', 'memberpress-bulk-invoice-generator' ); ?></span>
+          <div class="mpfig-stat-item">
+            <span class="mpfig-stat-number"><?php echo number_format( (int) $stats['refunded'] ); ?></span>
+            <span class="mpfig-stat-label"><?php esc_html_e( 'Refunded', 'pdf-invoice-generator-for-memberpress' ); ?></span>
           </div>
           <?php if ( (int) $stats['other'] > 0 ) : ?>
-          <div class="mpbig-stat-item">
-            <span class="mpbig-stat-number"><?php echo number_format( (int) $stats['other'] ); ?></span>
-            <span class="mpbig-stat-label"><?php esc_html_e( 'Other', 'memberpress-bulk-invoice-generator' ); ?></span>
+          <div class="mpfig-stat-item">
+            <span class="mpfig-stat-number"><?php echo number_format( (int) $stats['other'] ); ?></span>
+            <span class="mpfig-stat-label"><?php esc_html_e( 'Other', 'pdf-invoice-generator-for-memberpress' ); ?></span>
           </div>
           <?php endif; ?>
         </div>
@@ -170,46 +171,46 @@ class MPBulkInvoiceGenerator {
       </div>
 
       <!-- Generate Invoices Card -->
-      <div class="mpbig-card mpbig-options">
-        <h2><?php esc_html_e( 'Generate Invoices', 'memberpress-bulk-invoice-generator' ); ?></h2>
+      <div class="mpfig-card mpfig-options">
+        <h2><?php esc_html_e( 'Generate Invoices', 'pdf-invoice-generator-for-memberpress' ); ?></h2>
         
-        <form id="mpbig-form">
+        <form id="mpfig-form">
           <!-- Generation Settings Section -->
-          <div class="mpbig-form-section">
-            <h3 class="mpbig-section-title"><?php esc_html_e( 'Generation Settings', 'memberpress-bulk-invoice-generator' ); ?></h3>
+          <div class="mpfig-form-section">
+            <h3 class="mpfig-section-title"><?php esc_html_e( 'Generation Settings', 'pdf-invoice-generator-for-memberpress' ); ?></h3>
             
-            <div class="mpbig-form-row">
-              <div class="mpbig-form-group mpbig-form-group-full">
-                <label for="mpbig-type"><?php esc_html_e( 'Generation Type', 'memberpress-bulk-invoice-generator' ); ?></label>
-                <select id="mpbig-type" name="type" class="mpbig-form-control mpbig-select">
-                  <option value="all"><?php esc_html_e( 'Generate All Invoices', 'memberpress-bulk-invoice-generator' ); ?></option>
-                  <option value="period"><?php esc_html_e( 'Generate Invoices for Specific Period', 'memberpress-bulk-invoice-generator' ); ?></option>
+            <div class="mpfig-form-row">
+              <div class="mpfig-form-group mpfig-form-group-full">
+                <label for="mpfig-type"><?php esc_html_e( 'Generation Type', 'pdf-invoice-generator-for-memberpress' ); ?></label>
+                <select id="mpfig-type" name="type" class="mpfig-form-control mpfig-select">
+                  <option value="all"><?php esc_html_e( 'Generate All Invoices', 'pdf-invoice-generator-for-memberpress' ); ?></option>
+                  <option value="period"><?php esc_html_e( 'Generate Invoices for Specific Period', 'pdf-invoice-generator-for-memberpress' ); ?></option>
                 </select>
               </div>
             </div>
             
-            <div class="mpbig-form-row mpbig-hidden" id="mpbig-period-options">
-              <div class="mpbig-form-group mpbig-form-group-half">
-                <label for="mpbig-start-date"><?php esc_html_e( 'Start Date', 'memberpress-bulk-invoice-generator' ); ?></label>
-                <input type="text" id="mpbig-start-date" name="start_date" class="mpbig-form-control mpbig-date-input mpbig-datepicker" placeholder="YYYY-MM-DD" />
+            <div class="mpfig-form-row mpfig-hidden" id="mpfig-period-options">
+              <div class="mpfig-form-group mpfig-form-group-half">
+                <label for="mpfig-start-date"><?php esc_html_e( 'Start Date', 'pdf-invoice-generator-for-memberpress' ); ?></label>
+                <input type="text" id="mpfig-start-date" name="start_date" class="mpfig-form-control mpfig-date-input mpfig-datepicker" placeholder="YYYY-MM-DD" />
               </div>
               
-              <div class="mpbig-form-group mpbig-form-group-half">
-                <label for="mpbig-end-date"><?php esc_html_e( 'End Date', 'memberpress-bulk-invoice-generator' ); ?></label>
-                <input type="text" id="mpbig-end-date" name="end_date" class="mpbig-form-control mpbig-date-input mpbig-datepicker" placeholder="YYYY-MM-DD" />
+              <div class="mpfig-form-group mpfig-form-group-half">
+                <label for="mpfig-end-date"><?php esc_html_e( 'End Date', 'pdf-invoice-generator-for-memberpress' ); ?></label>
+                <input type="text" id="mpfig-end-date" name="end_date" class="mpfig-form-control mpfig-date-input mpfig-datepicker" placeholder="YYYY-MM-DD" />
               </div>
             </div>
           </div>
 
           <!-- Filter Settings Section -->
-          <div class="mpbig-form-section">
-            <h3 class="mpbig-section-title"><?php esc_html_e( 'Filter Settings', 'memberpress-bulk-invoice-generator' ); ?></h3>
+          <div class="mpfig-form-section">
+            <h3 class="mpfig-section-title"><?php esc_html_e( 'Filter Settings', 'pdf-invoice-generator-for-memberpress' ); ?></h3>
             
-            <div class="mpbig-form-row">
-              <div class="mpbig-form-group mpbig-form-group-half">
-                <label><?php esc_html_e( 'Membership Filter', 'memberpress-bulk-invoice-generator' ); ?></label>
-                <select name="membership_id" class="mpbig-form-control mpbig-select">
-                  <option value=""><?php esc_html_e( 'All Memberships', 'memberpress-bulk-invoice-generator' ); ?></option>
+            <div class="mpfig-form-row">
+              <div class="mpfig-form-group mpfig-form-group-half">
+                <label><?php esc_html_e( 'Membership Filter', 'pdf-invoice-generator-for-memberpress' ); ?></label>
+                <select name="membership_id" class="mpfig-form-control mpfig-select">
+                  <option value=""><?php esc_html_e( 'All Memberships', 'pdf-invoice-generator-for-memberpress' ); ?></option>
                   <?php
                   $memberships = get_posts( array(
                     'post_type' => 'memberpressproduct',
@@ -226,28 +227,28 @@ class MPBulkInvoiceGenerator {
                 </select>
               </div>
 
-              <div class="mpbig-form-group mpbig-form-group-half">
-                <label for="mpbig-customer-email"><?php esc_html_e( 'Customer Email Filter', 'memberpress-bulk-invoice-generator' ); ?></label>
-                <input type="email" id="mpbig-customer-email" name="customer_email" class="mpbig-form-control" placeholder="<?php esc_attr_e( 'Enter customer email address (optional)', 'memberpress-bulk-invoice-generator' ); ?>" />
-                <small class="mpbig-form-help"><?php esc_html_e( 'Leave empty to include all customers. Enter a specific email to filter transactions for that customer only.', 'memberpress-bulk-invoice-generator' ); ?></small>
+              <div class="mpfig-form-group mpfig-form-group-half">
+                <label for="mpfig-customer-email"><?php esc_html_e( 'Customer Email Filter', 'pdf-invoice-generator-for-memberpress' ); ?></label>
+                <input type="email" id="mpfig-customer-email" name="customer_email" class="mpfig-form-control" placeholder="<?php esc_attr_e( 'Enter customer email address (optional)', 'pdf-invoice-generator-for-memberpress' ); ?>" />
+                <small class="mpfig-form-help"><?php esc_html_e( 'Leave empty to include all customers. Enter a specific email to filter transactions for that customer only.', 'pdf-invoice-generator-for-memberpress' ); ?></small>
               </div>
             </div>
 
-            <div class="mpbig-form-row">
-              <div class="mpbig-form-group mpbig-form-group-full">
-                <label><?php esc_html_e( 'Transaction Status', 'memberpress-bulk-invoice-generator' ); ?></label>
-                <div class="mpbig-checkbox-group">
-                  <div class="mpbig-checkbox-item">
+            <div class="mpfig-form-row">
+              <div class="mpfig-form-group mpfig-form-group-full">
+                <label><?php esc_html_e( 'Transaction Status', 'pdf-invoice-generator-for-memberpress' ); ?></label>
+                <div class="mpfig-checkbox-group">
+                  <div class="mpfig-checkbox-item">
                     <input type="checkbox" name="status[]" value="complete" id="status-complete" checked />
-                    <label for="status-complete"><?php esc_html_e( 'Complete', 'memberpress-bulk-invoice-generator' ); ?></label>
+                    <label for="status-complete"><?php esc_html_e( 'Complete', 'pdf-invoice-generator-for-memberpress' ); ?></label>
                   </div>
-                  <div class="mpbig-checkbox-item">
+                  <div class="mpfig-checkbox-item">
                     <input type="checkbox" name="status[]" value="pending" id="status-pending" />
-                    <label for="status-pending"><?php esc_html_e( 'Pending', 'memberpress-bulk-invoice-generator' ); ?></label>
+                    <label for="status-pending"><?php esc_html_e( 'Pending', 'pdf-invoice-generator-for-memberpress' ); ?></label>
                   </div>
-                  <div class="mpbig-checkbox-item">
+                  <div class="mpfig-checkbox-item">
                     <input type="checkbox" name="status[]" value="refunded" id="status-refunded" checked />
-                    <label for="status-refunded"><?php esc_html_e( 'Refunded', 'memberpress-bulk-invoice-generator' ); ?></label>
+                    <label for="status-refunded"><?php esc_html_e( 'Refunded', 'pdf-invoice-generator-for-memberpress' ); ?></label>
                   </div>
                 </div>
               </div>
@@ -255,29 +256,29 @@ class MPBulkInvoiceGenerator {
           </div>
 
           <!-- Output Settings Section -->
-          <div class="mpbig-form-section">
-            <h3 class="mpbig-section-title"><?php esc_html_e( 'Output Settings', 'memberpress-bulk-invoice-generator' ); ?></h3>
+          <div class="mpfig-form-section">
+            <h3 class="mpfig-section-title"><?php esc_html_e( 'Output Settings', 'pdf-invoice-generator-for-memberpress' ); ?></h3>
             
-            <div class="mpbig-form-row">
-              <div class="mpbig-form-group mpbig-form-group-full">
-                <div class="mpbig-checkbox-item mpbig-checkbox-item-large">
-                  <input type="checkbox" id="mpbig-create-zip" name="create_zip" value="1" checked />
-                  <label for="mpbig-create-zip"><?php esc_html_e( 'Automatically create a ZIP file containing all generated PDFs', 'memberpress-bulk-invoice-generator' ); ?></label>
+            <div class="mpfig-form-row">
+              <div class="mpfig-form-group mpfig-form-group-full">
+                <div class="mpfig-checkbox-item mpfig-checkbox-item-large">
+                  <input type="checkbox" id="mpfig-create-zip" name="create_zip" value="1" checked />
+                  <label for="mpfig-create-zip"><?php esc_html_e( 'Automatically create a ZIP file containing all generated PDFs', 'pdf-invoice-generator-for-memberpress' ); ?></label>
                 </div>
               </div>
             </div>
           </div>
           
           <!-- Action Section -->
-          <div class="mpbig-form-section mpbig-form-section-action">
-            <div class="mpbig-form-row">
-              <div class="mpbig-form-group mpbig-form-group-full">
-                <button type="submit" class="mpbig-button mpbig-button-primary mpbig-button-large" id="mpbig-generate">
-                  <span class="mpbig-spinner mpbig-hidden" id="mpbig-spinner"></span>
-                  <?php esc_html_e( 'Generate Invoices', 'memberpress-bulk-invoice-generator' ); ?>
+          <div class="mpfig-form-section mpfig-form-section-action">
+            <div class="mpfig-form-row">
+              <div class="mpfig-form-group mpfig-form-group-full">
+                <button type="submit" class="mpfig-button mpfig-button-primary mpfig-button-large" id="mpfig-generate">
+                  <span class="mpfig-spinner mpfig-hidden" id="mpfig-spinner"></span>
+                  <?php esc_html_e( 'Generate Invoices', 'pdf-invoice-generator-for-memberpress' ); ?>
                 </button>
-                <span id="mpbig-progress" class="mpbig-hidden">
-                  <span id="mpbig-progress-text"></span>
+                <span id="mpfig-progress" class="mpfig-hidden">
+                  <span id="mpfig-progress-text"></span>
                 </span>
               </div>
             </div>
@@ -286,31 +287,31 @@ class MPBulkInvoiceGenerator {
       </div>
 
       <!-- Progress Card -->
-      <div class="mpbig-card mpbig-progress-container mpbig-hidden" id="mpbig-progress-container">
-        <div class="mpbig-progress-header">
-          <h2><?php esc_html_e( 'Generation Progress', 'memberpress-bulk-invoice-generator' ); ?></h2>
+      <div class="mpfig-card mpfig-progress-container mpfig-hidden" id="mpfig-progress-container">
+        <div class="mpfig-progress-header">
+          <h2><?php esc_html_e( 'Generation Progress', 'pdf-invoice-generator-for-memberpress' ); ?></h2>
         </div>
-        <div class="mpbig-progress-bar">
-          <div class="mpbig-progress-fill" id="mpbig-progress-fill"></div>
+        <div class="mpfig-progress-bar">
+          <div class="mpfig-progress-fill" id="mpfig-progress-fill"></div>
         </div>
-        <div class="mpbig-progress-stats">
-          <span id="mpbig-progress-current">0</span> / <span id="mpbig-progress-total">0</span> 
-          (<span id="mpbig-progress-percentage">0%</span>)
+        <div class="mpfig-progress-stats">
+          <span id="mpfig-progress-current">0</span> / <span id="mpfig-progress-total">0</span> 
+          (<span id="mpfig-progress-percentage">0%</span>)
         </div>
-        <div class="mpbig-progress-status" id="mpbig-progress-status"></div>
+        <div class="mpfig-progress-status" id="mpfig-progress-status"></div>
       </div>
 
       <!-- Results Card -->
-      <div class="mpbig-card mpbig-results mpbig-hidden" id="mpbig-results">
-        <h2><?php esc_html_e( 'Generation Results', 'memberpress-bulk-invoice-generator' ); ?></h2>
-        <div id="mpbig-results-content"></div>
+      <div class="mpfig-card mpfig-results mpfig-hidden" id="mpfig-results">
+        <h2><?php esc_html_e( 'Generation Results', 'pdf-invoice-generator-for-memberpress' ); ?></h2>
+        <div id="mpfig-results-content"></div>
       </div>
 
       <!-- File Management Card -->
-      <div class="mpbig-card mpbig-file-management">
-        <h2><?php esc_html_e( 'File Management', 'memberpress-bulk-invoice-generator' ); ?></h2>
+      <div class="mpfig-card mpfig-file-management">
+        <h2><?php esc_html_e( 'File Management', 'pdf-invoice-generator-for-memberpress' ); ?></h2>
         
-        <div class="mpbig-file-stats">
+        <div class="mpfig-file-stats">
           <?php
           $pdf_dir = WP_CONTENT_DIR . '/uploads/mepr/mpdf/';
           $file_count = 0;
@@ -325,40 +326,40 @@ class MPBulkInvoiceGenerator {
             }
           }
           ?>
-          <div class="mpbig-file-stat-item">
-            <span class="mpbig-file-stat-number"><?php echo number_format( (int) $file_count ); ?></span>
-            <span class="mpbig-file-stat-label"><?php esc_html_e( 'PDF Files', 'memberpress-bulk-invoice-generator' ); ?></span>
+          <div class="mpfig-file-stat-item">
+            <span class="mpfig-file-stat-number"><?php echo number_format( (int) $file_count ); ?></span>
+            <span class="mpfig-file-stat-label"><?php esc_html_e( 'PDF Files', 'pdf-invoice-generator-for-memberpress' ); ?></span>
           </div>
-          <div class="mpbig-file-stat-item">
-            <span class="mpbig-file-stat-number"><?php echo esc_html( size_format( $total_size, 2 ) ); ?></span>
-            <span class="mpbig-file-stat-label"><?php esc_html_e( 'Total Size', 'memberpress-bulk-invoice-generator' ); ?></span>
+          <div class="mpfig-file-stat-item">
+            <span class="mpfig-file-stat-number"><?php echo esc_html( size_format( $total_size, 2 ) ); ?></span>
+            <span class="mpfig-file-stat-label"><?php esc_html_e( 'Total Size', 'pdf-invoice-generator-for-memberpress' ); ?></span>
           </div>
         </div>
         
-        <div class="mpbig-file-actions">
-          <button type="button" class="mpbig-button mpbig-button-primary" id="mpbig-download-files" <?php echo 0 < $file_count ? '' : 'disabled'; ?>>
-            <span class="mpbig-spinner mpbig-hidden" id="mpbig-download-spinner"></span>
-            <?php esc_html_e( 'Download All Files', 'memberpress-bulk-invoice-generator' ); ?>
+        <div class="mpfig-file-actions">
+          <button type="button" class="mpfig-button mpfig-button-primary" id="mpfig-download-files" <?php echo 0 < $file_count ? '' : 'disabled'; ?>>
+            <span class="mpfig-spinner mpfig-hidden" id="mpfig-download-spinner"></span>
+            <?php esc_html_e( 'Download All Files', 'pdf-invoice-generator-for-memberpress' ); ?>
           </button>
-          <button type="button" class="mpbig-button mpbig-button-secondary" id="mpbig-empty-folder">
-            <span class="mpbig-spinner mpbig-hidden" id="mpbig-empty-spinner"></span>
-            <?php esc_html_e( 'Empty PDF Folder', 'memberpress-bulk-invoice-generator' ); ?>
+          <button type="button" class="mpfig-button mpfig-button-secondary" id="mpfig-empty-folder">
+            <span class="mpfig-spinner mpfig-hidden" id="mpfig-empty-spinner"></span>
+            <?php esc_html_e( 'Empty PDF Folder', 'pdf-invoice-generator-for-memberpress' ); ?>
           </button>
-          <p class="mpbig-file-warning">
-            <?php esc_html_e( 'This will permanently delete all PDF files in the mpdf folder. Make sure you have downloaded any important files first.', 'memberpress-bulk-invoice-generator' ); ?>
+          <p class="mpfig-file-warning">
+            <?php esc_html_e( 'This will permanently delete all PDF files in the mpdf folder. Make sure you have downloaded any important files first.', 'pdf-invoice-generator-for-memberpress' ); ?>
           </p>
         </div>
       </div>
 
       <!-- Information Card -->
-      <div class="mpbig-card mpbig-info">
-        <h2><?php esc_html_e( 'Important Information', 'memberpress-bulk-invoice-generator' ); ?></h2>
+      <div class="mpfig-card mpfig-info">
+        <h2><?php esc_html_e( 'Important Information', 'pdf-invoice-generator-for-memberpress' ); ?></h2>
         <ul>
-          <li><?php esc_html_e( 'Generated PDF files will be saved in: wp-content/uploads/mepr/mpdf/', 'memberpress-bulk-invoice-generator' ); ?></li>
-          <li><?php esc_html_e( 'Download the files before running the process again to avoid overwriting.', 'memberpress-bulk-invoice-generator' ); ?></li>
-          <li><?php esc_html_e( 'The process uses batch processing to handle large datasets efficiently.', 'memberpress-bulk-invoice-generator' ); ?></li>
-          <li><?php esc_html_e( 'Only payment transactions with status: Complete, Pending, or Refunded will be processed (excludes confirmation and failed transactions).', 'memberpress-bulk-invoice-generator' ); ?></li>
-          <li><?php esc_html_e( 'ZIP files are automatically created for easier download and organization.', 'memberpress-bulk-invoice-generator' ); ?></li>
+          <li><?php esc_html_e( 'Generated PDF files will be saved in: wp-content/uploads/mepr/mpdf/', 'pdf-invoice-generator-for-memberpress' ); ?></li>
+          <li><?php esc_html_e( 'Download the files before running the process again to avoid overwriting.', 'pdf-invoice-generator-for-memberpress' ); ?></li>
+          <li><?php esc_html_e( 'The process uses batch processing to handle large datasets efficiently.', 'pdf-invoice-generator-for-memberpress' ); ?></li>
+          <li><?php esc_html_e( 'Only payment transactions with status: Complete, Pending, or Refunded will be processed (excludes confirmation and failed transactions).', 'pdf-invoice-generator-for-memberpress' ); ?></li>
+          <li><?php esc_html_e( 'ZIP files are automatically created for easier download and organization.', 'pdf-invoice-generator-for-memberpress' ); ?></li>
         </ul>
       </div>
     </div>
@@ -369,10 +370,10 @@ class MPBulkInvoiceGenerator {
    * Get transaction statistics
    */
   private function get_transaction_stats() {
-    $cache_key = 'mpbig_transaction_stats';
+    $cache_key = 'mpfig_transaction_stats';
     
     // Check cache first
-    $stats = wp_cache_get( $cache_key, 'mpbig_stats' );
+    $stats = wp_cache_get( $cache_key, 'mpfig_stats' );
     
     if ( false === $stats ) {
       global $wpdb;
@@ -413,7 +414,7 @@ class MPBulkInvoiceGenerator {
       }
 
       // Cache the results for 5 minutes
-      wp_cache_set( $cache_key, $stats, 'mpbig_stats', 300 );
+      wp_cache_set( $cache_key, $stats, 'mpfig_stats', 300 );
     }
 
     return $stats;
@@ -425,12 +426,12 @@ class MPBulkInvoiceGenerator {
   public function ajax_generate_invoices() {
     try {
       if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) ) );
+        wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'pdf-invoice-generator-for-memberpress' ) ) );
         return;
       }
 
-      if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpbig_nonce' ) ) {
-        wp_send_json_error( array( 'message' => __( 'Security check failed.', 'memberpress-bulk-invoice-generator' ) ) );
+      if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpfig_nonce' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed.', 'pdf-invoice-generator-for-memberpress' ) ) );
         return;
       }
 
@@ -449,17 +450,17 @@ class MPBulkInvoiceGenerator {
 
 			// Validate date format
 			if ( ! empty( $start_date ) && ! $this->validate_date( $start_date ) ) {
-				wp_send_json_error( array( 'message' => __( 'Invalid start date format. Please use YYYY-MM-DD format.', 'memberpress-bulk-invoice-generator' ) ) );
+				wp_send_json_error( array( 'message' => __( 'Invalid start date format. Please use YYYY-MM-DD format.', 'pdf-invoice-generator-for-memberpress' ) ) );
 				return;
 			}
 
 			if ( ! empty( $end_date ) && ! $this->validate_date( $end_date ) ) {
-				wp_send_json_error( array( 'message' => __( 'Invalid end date format. Please use YYYY-MM-DD format.', 'memberpress-bulk-invoice-generator' ) ) );
+				wp_send_json_error( array( 'message' => __( 'Invalid end date format. Please use YYYY-MM-DD format.', 'pdf-invoice-generator-for-memberpress' ) ) );
 				return;
 			}
 
 			if ( ! empty( $start_date ) && ! empty( $end_date ) && strtotime( $start_date ) > strtotime( $end_date ) ) {
-				wp_send_json_error( array( 'message' => __( 'Start date must be before end date.', 'memberpress-bulk-invoice-generator' ) ) );
+				wp_send_json_error( array( 'message' => __( 'Start date must be before end date.', 'pdf-invoice-generator-for-memberpress' ) ) );
 				return;
 			}
 		}
@@ -470,7 +471,7 @@ class MPBulkInvoiceGenerator {
     if ( empty( $txn_ids ) ) {
       wp_send_json( array(
         'success' => true,
-        'message' => __( 'No transactions found matching the criteria.', 'memberpress-bulk-invoice-generator' ),
+        'message' => __( 'No transactions found matching the criteria.', 'pdf-invoice-generator-for-memberpress' ),
         'count' => 0
       ) );
     }
@@ -491,7 +492,7 @@ class MPBulkInvoiceGenerator {
     wp_send_json( array(
       'success' => true,
       // translators: %d is the number of transactions to process
-      'message' => sprintf( __( 'Starting batch processing for %d transactions...', 'memberpress-bulk-invoice-generator' ), count( $txn_ids ) ),
+      'message' => sprintf( __( 'Starting batch processing for %d transactions...', 'pdf-invoice-generator-for-memberpress' ), count( $txn_ids ) ),
       'total' => count( $txn_ids ),
       'batch_size' => $this->get_batch_size()
     ) );
@@ -499,10 +500,10 @@ class MPBulkInvoiceGenerator {
     } catch ( Exception $e ) {
       // Log error for debugging
       if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'MPBIG Error in ajax_generate_invoices: ' . $e->getMessage() );
-        error_log( 'MPBIG Stack trace: ' . $e->getTraceAsString() );
+        error_log( 'MPFIG Error in ajax_generate_invoices: ' . $e->getMessage() );
+        error_log( 'MPFIG Stack trace: ' . $e->getTraceAsString() );
       }
-      wp_send_json_error( array( 'message' => __( 'An error occurred while processing your request: ', 'memberpress-bulk-invoice-generator' ) . $e->getMessage() ) );
+      wp_send_json_error( array( 'message' => __( 'An error occurred while processing your request: ', 'pdf-invoice-generator-for-memberpress' ) . $e->getMessage() ) );
     }
   }
 
@@ -511,11 +512,11 @@ class MPBulkInvoiceGenerator {
    */
   public function ajax_process_batch() {
     if ( ! current_user_can( 'manage_options' ) ) {
-      wp_die( esc_html__( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) );
+      wp_die( esc_html__( 'You do not have permission to perform this action.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
-    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpbig_nonce' ) ) {
-      wp_die( esc_html__( 'Security check failed.', 'memberpress-bulk-invoice-generator' ) );
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpfig_nonce' ) ) {
+      wp_die( esc_html__( 'Security check failed.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
     $progress_data = get_option( $this->progress_key, array() );
@@ -523,7 +524,7 @@ class MPBulkInvoiceGenerator {
     if ( empty( $progress_data ) || empty( $progress_data['txn_ids'] ) ) {
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'No progress data found.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'No progress data found.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
 
@@ -531,7 +532,7 @@ class MPBulkInvoiceGenerator {
     if ( ! class_exists( 'MePdfInvoicesCtrl' ) ) {
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'MemberPress PDF Invoice add-on is not active.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'MemberPress PDF Invoice add-on is not active.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
 
@@ -557,11 +558,11 @@ class MPBulkInvoiceGenerator {
 			} catch ( Exception $e ) {
 				// Log error for debugging
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'MPBIG Error generating invoice for transaction ' . $txn_id . ': ' . $e->getMessage() );
-					error_log( 'MPBIG Stack trace: ' . $e->getTraceAsString() );
+					error_log( 'MPFIG Error generating invoice for transaction ' . $txn_id . ': ' . $e->getMessage() );
+					error_log( 'MPFIG Stack trace: ' . $e->getTraceAsString() );
 				}
 				// translators: %1$d is the transaction ID, %2$s is the error message
-				$errors_in_batch[] = sprintf( __( 'Error generating invoice for transaction %1$d: %2$s', 'memberpress-bulk-invoice-generator' ), $txn_id, $e->getMessage() );
+				$errors_in_batch[] = sprintf( __( 'Error generating invoice for transaction %1$d: %2$s', 'pdf-invoice-generator-for-memberpress' ), $txn_id, $e->getMessage() );
 			}
 
 			$processed_in_batch++;
@@ -580,13 +581,13 @@ class MPBulkInvoiceGenerator {
       
       $message = sprintf( 
         // translators: %d is the number of successfully generated invoices
-        __( 'Successfully generated %d invoices.', 'memberpress-bulk-invoice-generator' ), 
+        __( 'Successfully generated %d invoices.', 'pdf-invoice-generator-for-memberpress' ), 
         $progress_data['successful'] 
       );
 
       if ( ! empty( $progress_data['errors'] ) ) {
         // translators: %d is the number of errors that occurred
-        $message .= ' ' . sprintf( __( '%d errors occurred.', 'memberpress-bulk-invoice-generator' ), count( $progress_data['errors'] ) );
+        $message .= ' ' . sprintf( __( '%d errors occurred.', 'pdf-invoice-generator-for-memberpress' ), count( $progress_data['errors'] ) );
       }
 
       wp_send_json( array(
@@ -618,22 +619,22 @@ class MPBulkInvoiceGenerator {
    */
   public function ajax_create_zip() {
     if ( ! current_user_can( 'manage_options' ) ) {
-      wp_die( esc_html__( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) );
+      wp_die( esc_html__( 'You do not have permission to perform this action.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
-    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpbig_nonce' ) ) {
-      wp_die( esc_html__( 'Security check failed.', 'memberpress-bulk-invoice-generator' ) );
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpfig_nonce' ) ) {
+      wp_die( esc_html__( 'Security check failed.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
     $pdf_dir = WP_CONTENT_DIR . '/uploads/mepr/mpdf/';
     
     if ( ! is_dir( $pdf_dir ) ) {
       if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'MPBIG Error: PDF directory not found: ' . $pdf_dir );
+        error_log( 'MPFIG Error: PDF directory not found: ' . $pdf_dir );
       }
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'PDF directory not found.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'PDF directory not found.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
 
@@ -643,17 +644,17 @@ class MPBulkInvoiceGenerator {
       $zip_url = content_url( '/uploads/mepr/mpdf/' . basename( $zip_file ) );
       wp_send_json( array(
         'success' => true,
-        'message' => __( 'ZIP file created successfully!', 'memberpress-bulk-invoice-generator' ),
+        'message' => __( 'ZIP file created successfully!', 'pdf-invoice-generator-for-memberpress' ),
         'zip_url' => $zip_url,
         'zip_filename' => basename( $zip_file )
       ) );
     } else {
       if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'MPBIG Error: Failed to create ZIP file in directory: ' . $pdf_dir );
+        error_log( 'MPFIG Error: Failed to create ZIP file in directory: ' . $pdf_dir );
       }
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'Failed to create ZIP file.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'Failed to create ZIP file.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
   }
@@ -663,7 +664,7 @@ class MPBulkInvoiceGenerator {
    */
   public function ajax_get_progress() {
     if ( ! current_user_can( 'manage_options' ) ) {
-      wp_die( esc_html__( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) );
+      wp_die( esc_html__( 'You do not have permission to perform this action.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
     $progress_data = get_option( $this->progress_key, array() );
@@ -671,7 +672,7 @@ class MPBulkInvoiceGenerator {
     if ( empty( $progress_data ) ) {
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'No progress data found.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'No progress data found.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
 
@@ -689,11 +690,11 @@ class MPBulkInvoiceGenerator {
    */
   public function ajax_empty_folder() {
     if ( ! current_user_can( 'manage_options' ) ) {
-      wp_die( esc_html__( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) );
+      wp_die( esc_html__( 'You do not have permission to perform this action.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
-    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpbig_nonce' ) ) {
-      wp_die( esc_html__( 'Security check failed.', 'memberpress-bulk-invoice-generator' ) );
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpfig_nonce' ) ) {
+      wp_die( esc_html__( 'Security check failed.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
     $pdf_dir = WP_CONTENT_DIR . '/uploads/mepr/mpdf/';
@@ -701,7 +702,7 @@ class MPBulkInvoiceGenerator {
     if ( ! is_dir( $pdf_dir ) ) {
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'PDF directory not found.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'PDF directory not found.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
 
@@ -717,7 +718,7 @@ class MPBulkInvoiceGenerator {
           $deleted_count++;
         } else {
           // translators: %s is the filename that failed to delete
-          $errors[] = sprintf( __( 'Failed to delete: %s', 'memberpress-bulk-invoice-generator' ), basename( $file ) );
+          $errors[] = sprintf( __( 'Failed to delete: %s', 'pdf-invoice-generator-for-memberpress' ), basename( $file ) );
         }
       }
     }
@@ -730,7 +731,7 @@ class MPBulkInvoiceGenerator {
           $deleted_count++;
         } else {
           // translators: %s is the filename that failed to delete
-          $errors[] = sprintf( __( 'Failed to delete: %s', 'memberpress-bulk-invoice-generator' ), basename( $file ) );
+          $errors[] = sprintf( __( 'Failed to delete: %s', 'pdf-invoice-generator-for-memberpress' ), basename( $file ) );
         }
       }
     }
@@ -738,13 +739,13 @@ class MPBulkInvoiceGenerator {
     if ( $deleted_count > 0 ) {
       $message = sprintf( 
         // translators: %d is the number of files successfully deleted
-        __( 'Successfully deleted %d files from the PDF folder.', 'memberpress-bulk-invoice-generator' ), 
+        __( 'Successfully deleted %d files from the PDF folder.', 'pdf-invoice-generator-for-memberpress' ), 
         $deleted_count 
       );
       
       if ( ! empty( $errors ) ) {
         // translators: %d is the number of files that could not be deleted
-        $message .= ' ' . sprintf( __( '%d files could not be deleted.', 'memberpress-bulk-invoice-generator' ), count( $errors ) );
+        $message .= ' ' . sprintf( __( '%d files could not be deleted.', 'pdf-invoice-generator-for-memberpress' ), count( $errors ) );
       }
 
       wp_send_json( array(
@@ -756,7 +757,7 @@ class MPBulkInvoiceGenerator {
     } else {
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'No files found to delete.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'No files found to delete.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
   }
@@ -766,11 +767,11 @@ class MPBulkInvoiceGenerator {
    */
   public function ajax_download_files() {
     if ( ! current_user_can( 'manage_options' ) ) {
-      wp_die( esc_html__( 'You do not have permission to perform this action.', 'memberpress-bulk-invoice-generator' ) );
+      wp_die( esc_html__( 'You do not have permission to perform this action.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
-    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpbig_nonce' ) ) {
-      wp_die( esc_html__( 'Security check failed.', 'memberpress-bulk-invoice-generator' ) );
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'mpfig_nonce' ) ) {
+      wp_die( esc_html__( 'Security check failed.', 'pdf-invoice-generator-for-memberpress' ) );
     }
 
     $pdf_dir = WP_CONTENT_DIR . '/uploads/mepr/mpdf/';
@@ -778,7 +779,7 @@ class MPBulkInvoiceGenerator {
     if ( ! is_dir( $pdf_dir ) ) {
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'PDF directory not found.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'PDF directory not found.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
 
@@ -787,7 +788,7 @@ class MPBulkInvoiceGenerator {
     if ( empty( $pdf_files ) ) {
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'No PDF files found to download.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'No PDF files found to download.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
 
@@ -798,7 +799,7 @@ class MPBulkInvoiceGenerator {
       $zip_url = content_url( '/uploads/mepr/mpdf/' . basename( $zip_file ) );
       wp_send_json( array(
         'success' => true,
-        'message' => __( 'ZIP file created successfully!', 'memberpress-bulk-invoice-generator' ),
+        'message' => __( 'ZIP file created successfully!', 'pdf-invoice-generator-for-memberpress' ),
         'zip_url' => $zip_url,
         'zip_filename' => basename( $zip_file ),
         'file_count' => count( $pdf_files )
@@ -806,7 +807,7 @@ class MPBulkInvoiceGenerator {
     } else {
       wp_send_json( array(
         'success' => false,
-        'message' => __( 'Failed to create ZIP file.', 'memberpress-bulk-invoice-generator' )
+        'message' => __( 'Failed to create ZIP file.', 'pdf-invoice-generator-for-memberpress' )
       ) );
     }
   }
@@ -824,10 +825,10 @@ class MPBulkInvoiceGenerator {
    */
   private function get_transaction_ids( $type, $statuses, $start_date = '', $end_date = '', $membership_id = 0, $customer_email = '' ) {
     // Create cache key based on parameters
-    $cache_key = 'mpbig_transaction_ids_' . md5( serialize( array( $type, $statuses, $start_date, $end_date, $membership_id, $customer_email ) ) );
+    $cache_key = 'mpfig_transaction_ids_' . md5( serialize( array( $type, $statuses, $start_date, $end_date, $membership_id, $customer_email ) ) );
     
     // Check cache first
-    $txn_ids = wp_cache_get( $cache_key, 'mpbig_transactions' );
+    $txn_ids = wp_cache_get( $cache_key, 'mpfig_transactions' );
     
     if ( false === $txn_ids ) {
       global $wpdb;
@@ -840,7 +841,7 @@ class MPBulkInvoiceGenerator {
       // Additional safety: ensure table name matches expected pattern
       if ( ! preg_match( '/^[a-zA-Z0-9_]+$/', $table ) || strpos( $table, 'mepr_transactions' ) === false ) {
         if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-          error_log( 'MPBIG Security: Invalid table name detected: ' . $table );
+          error_log( 'MPFIG Security: Invalid table name detected: ' . $table );
         }
         return array();
       }
@@ -903,7 +904,7 @@ class MPBulkInvoiceGenerator {
 
         if ( $wpdb->last_error ) {
           if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-            error_log( 'MPBIG Database Error: ' . $wpdb->last_error );
+            error_log( 'MPFIG Database Error: ' . $wpdb->last_error );
           }
           return array();
         }
@@ -914,7 +915,7 @@ class MPBulkInvoiceGenerator {
       }
       
       // Cache the results for 2 minutes (shorter cache for dynamic queries)
-      wp_cache_set( $cache_key, $txn_ids, 'mpbig_transactions', 120 );
+      wp_cache_set( $cache_key, $txn_ids, 'mpfig_transactions', 120 );
     }
 
     return $txn_ids;
@@ -926,7 +927,7 @@ class MPBulkInvoiceGenerator {
   private function create_zip_file( $pdf_dir ) {
     if ( ! class_exists( 'ZipArchive' ) ) {
       if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'MPBIG Error: ZipArchive class not available' );
+        error_log( 'MPFIG Error: ZipArchive class not available' );
       }
       return false;
     }
@@ -939,7 +940,7 @@ class MPBulkInvoiceGenerator {
 		$result = $zip->open( $zip_path, ZipArchive::CREATE );
 		if ( true !== $result ) {
       if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'MPBIG Error: Failed to open ZIP file. Error code: ' . $result . ', Path: ' . $zip_path );
+        error_log( 'MPFIG Error: Failed to open ZIP file. Error code: ' . $result . ', Path: ' . $zip_path );
       }
       return false;
     }
@@ -948,7 +949,7 @@ class MPBulkInvoiceGenerator {
     
     if ( empty( $files ) ) {
       if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'MPBIG Warning: No PDF files found to add to ZIP in directory: ' . $pdf_dir );
+        error_log( 'MPFIG Warning: No PDF files found to add to ZIP in directory: ' . $pdf_dir );
       }
     }
     
@@ -962,7 +963,7 @@ class MPBulkInvoiceGenerator {
     
     if ( ! file_exists( $zip_path ) ) {
       if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'MPBIG Error: ZIP file was not created at path: ' . $zip_path );
+        error_log( 'MPFIG Error: ZIP file was not created at path: ' . $zip_path );
       }
       return false;
     }
@@ -990,18 +991,18 @@ class MPBulkInvoiceGenerator {
    * Schedule cleanup event if not already scheduled
    */
   public function schedule_cleanup_event() {
-    if ( ! wp_next_scheduled( 'mpbig_cleanup_progress' ) ) {
-      wp_schedule_event( time(), 'hourly', 'mpbig_cleanup_progress' );
+    if ( ! wp_next_scheduled( 'mpfig_cleanup_progress' ) ) {
+      wp_schedule_event( time(), 'hourly', 'mpfig_cleanup_progress' );
     }
   }
 
   /**
    * Get the current batch size (allows for dynamic batch size)
    * 
-   * Filter: mpbig_batch_size
+   * Filter: mpfig_batch_size
    * 
    * Usage example:
-   * add_filter( 'mpbig_batch_size', function( $batch_size ) {
+   * add_filter( 'mpfig_batch_size', function( $batch_size ) {
    *     return 25; // Process 25 transactions per batch instead of 10
    * });
    * 
@@ -1009,14 +1010,14 @@ class MPBulkInvoiceGenerator {
    * @return int The filtered batch size
    */
   public function get_batch_size() {
-    return apply_filters( 'mpbig_batch_size', $this->batch_size );
+    return apply_filters( 'mpfig_batch_size', $this->batch_size );
   }
 
   /**
    * Clear plugin caches
    */
   private function clear_plugin_caches() {
-    wp_cache_delete( 'mpbig_transaction_stats', 'mpbig_stats' );
+    wp_cache_delete( 'mpfig_transaction_stats', 'mpfig_stats' );
     // Note: We don't clear transaction IDs cache as it's based on specific parameters
     // and will naturally expire. Clearing all would be too aggressive.
   }
@@ -1029,7 +1030,7 @@ class MPBulkInvoiceGenerator {
       echo '<div class="notice notice-error"><p>';
       printf( 
         // translators: %1$s is the opening link tag, %2$s is the closing link tag
-        esc_html__( 'MemberPress Bulk Invoice Generator requires the MemberPress PDF Invoice add-on to be active. Please %1$sactivate it%2$s.', 'memberpress-bulk-invoice-generator' ),
+        esc_html__( 'PDF Invoice Generator for MemberPress requires the MemberPress PDF Invoice add-on to be active. Please %1$sactivate it%2$s.', 'pdf-invoice-generator-for-memberpress' ),
         '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
         '</a>'
       );

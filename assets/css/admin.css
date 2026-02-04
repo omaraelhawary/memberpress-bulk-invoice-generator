@@ -1,7 +1,7 @@
-/* MemberPress Bulk Invoice Generator - Modern Admin Styles */
+/* PDF Invoice Generator for MemberPress - Modern Admin Styles */
 
 /* Reset and Base Styles */
-.mpbig-container {
+.mpfig-container {
     max-width: 1200px;
     margin: 0 auto;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -10,7 +10,7 @@
 }
 
 /* Page Header Styling */
-.mpbig-container h1 {
+.mpfig-container h1 {
     font-size: 2.2rem;
     font-weight: 700;
     color: #1d2327;
@@ -23,7 +23,7 @@
 }
 
 /* Modern Card Design */
-.mpbig-card {
+.mpfig-card {
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -35,12 +35,12 @@
     overflow: hidden;
 }
 
-.mpbig-card:hover {
+.mpfig-card:hover {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     transform: translateY(-4px);
 }
 
-.mpbig-card::before {
+.mpfig-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -52,7 +52,7 @@
 }
 
 /* Card Headers */
-.mpbig-card h2 {
+.mpfig-card h2 {
     margin: 0 0 24px 0;
     color: #1d2327;
     font-size: 1.5rem;
@@ -64,7 +64,7 @@
     position: relative;
 }
 
-.mpbig-card h2::before {
+.mpfig-card h2::before {
     content: '';
     width: 4px;
     height: 28px;
@@ -74,19 +74,19 @@
 }
 
 /* Statistics Section */
-.mpbig-stats {
+.mpfig-stats {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 2px solid #0073aa;
 }
 
-.mpbig-stats-grid {
+.mpfig-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     margin-top: 20px;
 }
 
-.mpbig-stat-item {
+.mpfig-stat-item {
     background: #ffffff;
     padding: 24px;
     border-radius: 12px;
@@ -97,7 +97,7 @@
     overflow: hidden;
 }
 
-.mpbig-stat-item::before {
+.mpfig-stat-item::before {
     content: '';
     position: absolute;
     top: 0;
@@ -109,16 +109,16 @@
     transition: transform 0.3s ease;
 }
 
-.mpbig-stat-item:hover {
+.mpfig-stat-item:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.mpbig-stat-item:hover::before {
+.mpfig-stat-item:hover::before {
     transform: scaleX(1);
 }
 
-.mpbig-stat-number {
+.mpfig-stat-number {
     font-size: 2.5rem;
     font-weight: 800;
     color: #0073aa;
@@ -127,7 +127,7 @@
     text-shadow: 0 2px 4px rgba(0, 115, 170, 0.1);
 }
 
-.mpbig-stat-label {
+.mpfig-stat-label {
     font-size: 0.9rem;
     color: #6c757d;
     font-weight: 600;
@@ -138,23 +138,23 @@
 
 
 /* File Management */
-.mpbig-file-management {
+.mpfig-file-management {
     background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
     border: 2px solid #e53e3e;
 }
 
-.mpbig-file-management h2 {
+.mpfig-file-management h2 {
     color: #e53e3e;
 }
 
-.mpbig-file-stats {
+.mpfig-file-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 20px;
     margin-bottom: 24px;
 }
 
-.mpbig-file-stat-item {
+.mpfig-file-stat-item {
     background: #ffffff;
     padding: 20px;
     border-radius: 10px;
@@ -163,12 +163,12 @@
     transition: all 0.3s ease;
 }
 
-.mpbig-file-stat-item:hover {
+.mpfig-file-stat-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.mpbig-file-stat-number {
+.mpfig-file-stat-number {
     font-size: 1.8rem;
     font-weight: 700;
     color: #e53e3e;
@@ -176,7 +176,7 @@
     margin-bottom: 8px;
 }
 
-.mpbig-file-stat-label {
+.mpfig-file-stat-label {
     font-size: 0.9rem;
     color: #6c757d;
     font-weight: 600;
@@ -184,7 +184,7 @@
     letter-spacing: 0.5px;
 }
 
-.mpbig-file-actions {
+.mpfig-file-actions {
     text-align: center;
     display: flex;
     gap: 16px;
@@ -192,22 +192,22 @@
     flex-wrap: wrap;
 }
 
-.mpbig-file-actions .mpbig-button {
+.mpfig-file-actions .mpfig-button {
     min-width: 160px;
 }
 
-.mpbig-file-actions .mpbig-button-primary {
+.mpfig-file-actions .mpfig-button-primary {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
-.mpbig-file-actions .mpbig-button-primary:hover {
+.mpfig-file-actions .mpfig-button-primary:hover {
     background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
 }
 
-.mpbig-file-actions .mpbig-button-primary:disabled {
+.mpfig-file-actions .mpfig-button-primary:disabled {
     background: #6c757d;
     cursor: not-allowed;
     transform: none;
@@ -216,13 +216,13 @@
 }
 
 /* Add a download icon to the button */
-.mpbig-file-actions .mpbig-button-primary::after {
+.mpfig-file-actions .mpfig-button-primary::after {
     content: '⬇';
     margin-left: 8px;
     font-size: 14px;
 }
 
-.mpbig-file-warning {
+.mpfig-file-warning {
     margin-top: 16px;
     font-size: 0.9rem;
     color: #e53e3e;
@@ -231,7 +231,7 @@
 }
 
 /* Form Layout Structure */
-.mpbig-form-section {
+.mpfig-form-section {
     margin-bottom: 40px;
     padding: 24px;
     background: #f8f9fa;
@@ -242,22 +242,22 @@
     z-index: 1; /* Ensure proper layering */
 }
 
-.mpbig-form-section:last-child {
+.mpfig-form-section:last-child {
     margin-bottom: 0;
 }
 
-.mpbig-form-section-action {
+.mpfig-form-section-action {
     text-align: center;
     padding: 24px;
 }
 
-.mpbig-form-section-action .mpbig-form-group {
+.mpfig-form-section-action .mpfig-form-group {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.mpbig-section-title {
+.mpfig-section-title {
     margin: 0 0 24px 0;
     color: #1d2327;
     font-size: 1.2rem;
@@ -268,7 +268,7 @@
     position: relative;
 }
 
-.mpbig-section-title::before {
+.mpfig-section-title::before {
     content: '';
     width: 4px;
     height: 20px;
@@ -277,19 +277,19 @@
     box-shadow: 0 2px 4px rgba(0, 115, 170, 0.3);
 }
 
-.mpbig-form-row {
+.mpfig-form-row {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
     align-items: flex-start;
 }
 
-.mpbig-form-row:last-child {
+.mpfig-form-row:last-child {
     margin-bottom: 0;
 }
 
 /* Form Group Sizing */
-.mpbig-form-group {
+.mpfig-form-group {
     margin-bottom: 0;
     flex: 1;
     display: flex;
@@ -297,21 +297,21 @@
     overflow: visible; /* Allow datepicker to extend beyond form group */
 }
 
-.mpbig-form-group-full {
+.mpfig-form-group-full {
     flex: 1 1 100%;
 }
 
-.mpbig-form-group-half {
+.mpfig-form-group-half {
     flex: 1 1 calc(50% - 10px);
     min-height: 100px; /* Ensure consistent height for alignment */
 }
 
 /* Form Styling */
-.mpbig-form-group {
+.mpfig-form-group {
     margin-bottom: 0;
 }
 
-.mpbig-form-group label {
+.mpfig-form-group label {
     display: block;
     margin-bottom: 10px;
     font-weight: 600;
@@ -320,7 +320,7 @@
     letter-spacing: 0.3px;
 }
 
-.mpbig-form-control {
+.mpfig-form-control {
     width: 100%;
     padding: 14px 18px;
     border: 2px solid #e1e5e9;
@@ -333,14 +333,14 @@
     box-sizing: border-box;
 }
 
-.mpbig-form-control:focus {
+.mpfig-form-control:focus {
     outline: none;
     border-color: #0073aa;
     box-shadow: 0 0 0 4px rgba(0, 115, 170, 0.1);
     transform: translateY(-1px);
 }
 
-.mpbig-form-help {
+.mpfig-form-help {
     display: block;
     margin-top: 8px;
     font-size: 0.85rem;
@@ -350,7 +350,7 @@
     flex-shrink: 0; /* Prevent help text from affecting alignment */
 }
 
-.mpbig-select {
+.mpfig-select {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 16px center;
     background-repeat: no-repeat;
@@ -361,14 +361,14 @@
 }
 
 /* Checkbox Styling */
-.mpbig-checkbox-group {
+.mpfig-checkbox-group {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 16px;
     margin-top: 12px;
 }
 
-.mpbig-checkbox-item {
+.mpfig-checkbox-item {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -382,7 +382,7 @@
     overflow: hidden;
 }
 
-.mpbig-checkbox-item-large {
+.mpfig-checkbox-item-large {
     padding: 20px;
     border-radius: 12px;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
@@ -390,7 +390,7 @@
     box-shadow: 0 2px 8px rgba(0, 115, 170, 0.1);
 }
 
-.mpbig-checkbox-item::before {
+.mpfig-checkbox-item::before {
     content: '';
     position: absolute;
     top: 0;
@@ -402,25 +402,25 @@
     transition: transform 0.3s ease;
 }
 
-.mpbig-checkbox-item:hover {
+.mpfig-checkbox-item:hover {
     border-color: #0073aa;
     background: #f8f9fa;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 115, 170, 0.1);
 }
 
-.mpbig-checkbox-item:hover::before {
+.mpfig-checkbox-item:hover::before {
     transform: scaleX(1);
 }
 
-.mpbig-checkbox-item input[type="checkbox"] {
+.mpfig-checkbox-item input[type="checkbox"] {
     width: 20px;
     height: 20px;
     accent-color: #0073aa;
     cursor: pointer;
 }
 
-.mpbig-checkbox-item label {
+.mpfig-checkbox-item label {
     margin: 0;
     font-weight: 600;
     color: #1d2327;
@@ -429,25 +429,25 @@
 }
 
 /* Date Inputs */
-.mpbig-date-input {
+.mpfig-date-input {
     width: 100%;
     max-width: 200px;
 }
 
 /* Date Row Layout */
-.mpbig-date-row {
+.mpfig-date-row {
     display: flex;
     gap: 20px;
     align-items: flex-end;
 }
 
-.mpbig-date-row .mpbig-form-group {
+.mpfig-date-row .mpfig-form-group {
     flex: 1;
     margin-bottom: 0;
 }
 
 /* Button Styling */
-.mpbig-button {
+.mpfig-button {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -465,7 +465,7 @@
     letter-spacing: 0.3px;
 }
 
-.mpbig-button::before {
+.mpfig-button::before {
     content: '';
     position: absolute;
     top: 0;
@@ -476,34 +476,34 @@
     transition: left 0.5s;
 }
 
-.mpbig-button:hover::before {
+.mpfig-button:hover::before {
     left: 100%;
 }
 
-.mpbig-button-primary {
+.mpfig-button-primary {
     background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
     color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
 }
 
-.mpbig-button-primary:hover {
+.mpfig-button-primary:hover {
     background: linear-gradient(135deg, #005a87 0%, #004466 100%);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 115, 170, 0.4);
 }
 
-.mpbig-button-primary:active {
+.mpfig-button-primary:active {
     transform: translateY(0);
 }
 
-.mpbig-button-primary:disabled {
+.mpfig-button-primary:disabled {
     background: #6c757d;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-.mpbig-button-large {
+.mpfig-button-large {
     padding: 16px 32px;
     font-size: 16px;
     font-weight: 700;
@@ -511,36 +511,36 @@
     box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
 }
 
-.mpbig-button-secondary {
+.mpfig-button-secondary {
     background: #f8f9fa;
     color: #1d2327;
     border: 2px solid #e1e5e9;
 }
 
-.mpbig-button-secondary:hover {
+.mpfig-button-secondary:hover {
     background: #e9ecef;
     border-color: #0073aa;
     color: #0073aa;
 }
 
 /* Progress Section */
-.mpbig-progress-container {
+.mpfig-progress-container {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 2px solid #0073aa;
 }
 
-.mpbig-progress-header {
+.mpfig-progress-header {
     text-align: center;
     margin-bottom: 28px;
 }
 
-.mpbig-progress-header h2 {
+.mpfig-progress-header h2 {
     color: #0073aa;
     justify-content: center;
 }
 
 /* Modern Progress Bar */
-.mpbig-progress-bar {
+.mpfig-progress-bar {
     width: 100%;
     height: 28px;
     background: #e9ecef;
@@ -551,7 +551,7 @@
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.mpbig-progress-fill {
+.mpfig-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #0073aa 0%, #005a87 50%, #004466 100%);
     width: var(--progress-width, 0%);
@@ -561,7 +561,7 @@
     overflow: hidden;
 }
 
-.mpbig-progress-fill::after {
+.mpfig-progress-fill::after {
     content: '';
     position: absolute;
     top: 0;
@@ -582,7 +582,7 @@
     100% { left: 100%; }
 }
 
-.mpbig-progress-stats {
+.mpfig-progress-stats {
     text-align: center;
     font-size: 1.2rem;
     font-weight: 700;
@@ -590,13 +590,13 @@
     margin-bottom: 16px;
 }
 
-.mpbig-progress-percentage {
+.mpfig-progress-percentage {
     color: #0073aa;
     font-size: 1.4rem;
     font-weight: 800;
 }
 
-.mpbig-progress-status {
+.mpfig-progress-status {
     text-align: center;
     font-size: 0.95rem;
     color: #6c757d;
@@ -604,11 +604,11 @@
 }
 
 /* Results Section */
-.mpbig-results {
+.mpfig-results {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
-.mpbig-notice {
+.mpfig-notice {
     padding: 20px 24px;
     border-radius: 12px;
     margin: 20px 0;
@@ -618,38 +618,38 @@
     font-weight: 500;
 }
 
-.mpbig-notice-success {
+.mpfig-notice-success {
     border-left-color: #28a745;
     background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
 }
 
-.mpbig-notice-error {
+.mpfig-notice-error {
     border-left-color: #dc3545;
     background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
 }
 
-.mpbig-notice-warning {
+.mpfig-notice-warning {
     border-left-color: #ffc107;
     background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
 }
 
-.mpbig-notice-info {
+.mpfig-notice-info {
     border-left-color: #17a2b8;
     background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
 }
 
 /* Information Section */
-.mpbig-info {
+.mpfig-info {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
-.mpbig-info ul {
+.mpfig-info ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.mpbig-info li {
+.mpfig-info li {
     padding: 16px 0;
     border-bottom: 1px solid #e1e5e9;
     display: flex;
@@ -661,17 +661,17 @@
     transition: all 0.3s ease;
 }
 
-.mpbig-info li:hover {
+.mpfig-info li:hover {
     background: rgba(0, 115, 170, 0.05);
     padding-left: 8px;
     border-radius: 8px;
 }
 
-.mpbig-info li:last-child {
+.mpfig-info li:last-child {
     border-bottom: none;
 }
 
-.mpbig-info li::before {
+.mpfig-info li::before {
     content: '✓';
     color: #28a745;
     font-weight: bold;
@@ -680,13 +680,13 @@
 }
 
 /* Loading States */
-.mpbig-loading {
+.mpfig-loading {
     opacity: 0.7;
     pointer-events: none;
     position: relative;
 }
 
-.mpbig-spinner {
+.mpfig-spinner {
     display: inline-block;
     width: 24px;
     height: 24px;
@@ -703,7 +703,7 @@
 }
 
 /* ZIP Download Button */
-.mpbig-download-btn {
+.mpfig-download-btn {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -719,14 +719,14 @@
     letter-spacing: 0.3px;
 }
 
-.mpbig-download-btn:hover {
+.mpfig-download-btn:hover {
     background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
     color: #ffffff;
 }
 
-.mpbig-download-btn::before {
+.mpfig-download-btn::before {
     content: '⬇';
     font-size: 1.2rem;
     font-weight: bold;
@@ -734,58 +734,58 @@
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-    .mpbig-container h1 {
+    .mpfig-container h1 {
         font-size: 1.8rem;
     }
     
-    .mpbig-card {
+    .mpfig-card {
         padding: 24px;
         margin-bottom: 20px;
     }
     
-    .mpbig-stats-grid {
+    .mpfig-stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 16px;
     }
     
-    .mpbig-form-section {
+    .mpfig-form-section {
         padding: 20px;
         margin-bottom: 24px;
     }
     
-    .mpbig-form-row {
+    .mpfig-form-row {
         flex-direction: column;
         gap: 16px;
     }
     
-    .mpbig-form-group-half {
+    .mpfig-form-group-half {
         flex: 1 1 100%;
         min-height: auto; /* Remove min-height on mobile */
     }
     
-    .mpbig-checkbox-group {
+    .mpfig-checkbox-group {
         grid-template-columns: 1fr;
     }
     
-    .mpbig-date-input {
+    .mpfig-date-input {
         width: 100%;
         max-width: none;
     }
     
-    .mpbig-progress-stats {
+    .mpfig-progress-stats {
         font-size: 1.1rem;
     }
     
-    .mpbig-progress-status {
+    .mpfig-progress-status {
         font-size: 0.9rem;
     }
     
-    .mpbig-button {
+    .mpfig-button {
         width: 100%;
         justify-content: center;
     }
     
-    .mpbig-button-large {
+    .mpfig-button-large {
         padding: 14px 28px;
         font-size: 15px;
         min-width: auto;
@@ -793,41 +793,41 @@
 }
 
 @media screen and (max-width: 480px) {
-    .mpbig-container h1 {
+    .mpfig-container h1 {
         font-size: 1.6rem;
     }
     
-    .mpbig-card {
+    .mpfig-card {
         padding: 20px;
     }
     
-    .mpbig-card h2 {
+    .mpfig-card h2 {
         font-size: 1.3rem;
     }
     
-    .mpbig-stat-number {
+    .mpfig-stat-number {
         font-size: 2rem;
     }
     
-    .mpbig-form-group {
+    .mpfig-form-group {
         margin-bottom: 24px;
     }
 }
 
 /* Interactive States */
-.mpbig-checked {
+.mpfig-checked {
     border-color: #0073aa !important;
     background: #f0f8ff !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 115, 170, 0.15);
 }
 
-.mpbig-focused {
+.mpfig-focused {
     position: relative;
 }
 
 /* Remove the border effect from form groups */
-.mpbig-focused::after {
+.mpfig-focused::after {
     display: none;
 }
 
@@ -836,7 +836,7 @@
     100% { transform: scale(1.02); opacity: 0; }
 }
 
-.mpbig-hover {
+.mpfig-hover {
     transform: translateY(-6px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
 }
@@ -962,31 +962,31 @@
 }
 
 /* Ensure datepicker doesn't interfere with form layout */
-.mpbig-form-group {
+.mpfig-form-group {
     position: relative;
     z-index: 1;
 }
 
-.mpbig-form-group:focus-within {
+.mpfig-form-group:focus-within {
     z-index: 2;
 }
 
 
 /* Page Load Animation - Only animate if JavaScript adds the class */
-.mpbig-container.mpbig-loaded {
+.mpfig-container.mpfig-loaded {
     opacity: 1;
     transform: translateY(0);
     transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Enhanced Loading States */
-.mpbig-loading {
+.mpfig-loading {
     opacity: 0.7;
     pointer-events: none;
     position: relative;
 }
 
-.mpbig-loading::after {
+.mpfig-loading::after {
     content: '';
     position: absolute;
     top: 0;
@@ -999,7 +999,7 @@
 }
 
 /* Success Animation */
-.mpbig-notice-success {
+.mpfig-notice-success {
     animation: successSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1009,7 +1009,7 @@
 }
 
 /* Error Animation */
-.mpbig-notice-error {
+.mpfig-notice-error {
     animation: errorShake 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1020,7 +1020,7 @@
 }
 
 /* Animation Classes */
-.mpbig-fade-in {
+.mpfig-fade-in {
     animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1029,7 +1029,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-.mpbig-slide-in {
+.mpfig-slide-in {
     animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1039,45 +1039,45 @@
 }
 
 /* Utility Classes */
-.mpbig-text-center { text-align: center; }
-.mpbig-text-right { text-align: right; }
-.mpbig-mb-0 { margin-bottom: 0; }
-.mpbig-mt-16 { margin-top: 16px; }
-.mpbig-mb-16 { margin-bottom: 16px; }
-.mpbig-hidden { display: none !important; }
-.mpbig-visible { display: block !important; }
+.mpfig-text-center { text-align: center; }
+.mpfig-text-right { text-align: right; }
+.mpfig-mb-0 { margin-bottom: 0; }
+.mpfig-mt-16 { margin-top: 16px; }
+.mpfig-mb-16 { margin-bottom: 16px; }
+.mpfig-hidden { display: none !important; }
+.mpfig-visible { display: block !important; }
 
 /* Slide animation classes for CSP compliance */
-.mpbig-slide-down {
+.mpfig-slide-down {
     display: block !important;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease-out;
 }
 
-.mpbig-slide-down.mpbig-visible {
+.mpfig-slide-down.mpfig-visible {
     max-height: 2000px;
     transition: max-height 0.4s ease-in;
 }
 
-.mpbig-slide-up {
+.mpfig-slide-up {
     max-height: 2000px;
     overflow: hidden;
     transition: max-height 0.4s ease-out;
 }
 
-.mpbig-slide-up.mpbig-hidden {
+.mpfig-slide-up.mpfig-hidden {
     max-height: 0;
     transition: max-height 0.4s ease-in;
 }
 
 /* Fade animation classes */
-.mpbig-fade-out {
+.mpfig-fade-out {
     opacity: 1;
     transition: opacity 0.3s ease-out;
 }
 
-.mpbig-fade-out.mpbig-hidden {
+.mpfig-fade-out.mpfig-hidden {
     opacity: 0;
     pointer-events: none;
 }

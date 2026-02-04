@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# MemberPress Bulk Invoice Generator - Build Script
+# PDF Invoice Generator for MemberPress - Build Script
 # This script builds the minified CSS and JS files
 
-echo "🔨 Building MemberPress Bulk Invoice Generator..."
+echo "🔨 Building PDF Invoice Generator for MemberPress..."
 
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then
@@ -39,21 +39,21 @@ if [ $? -eq 0 ]; then
     echo "📦 Creating release ZIP file..."
     
     # Clean up existing release folder
-    rm -rf release/memberpress-bulk-invoice-generator
-    mkdir -p release/memberpress-bulk-invoice-generator
+    rm -rf release/pdf-invoice-generator-for-memberpress
+    mkdir -p release/pdf-invoice-generator-for-memberpress
     
     # Copy files to release folder (excluding screenshots)
-    cp -r assets memberpress-bulk-invoice-generator.php install.php uninstall.php README.md CHANGELOG.md LICENSE composer.json release/memberpress-bulk-invoice-generator/
+    cp -r assets pdf-invoice-generator-for-memberpress.php install.php uninstall.php README.md CHANGELOG.md LICENSE composer.json release/pdf-invoice-generator-for-memberpress/
     
     # Create ZIP file
     cd release
-    rm -f memberpress-bulk-invoice-generator.zip
-    zip -r memberpress-bulk-invoice-generator.zip memberpress-bulk-invoice-generator/
+    rm -f pdf-invoice-generator-for-memberpress.zip
+    zip -r pdf-invoice-generator-for-memberpress.zip pdf-invoice-generator-for-memberpress/
     
     if [ $? -eq 0 ]; then
         echo "✅ Release ZIP created successfully!"
-        echo "📁 Location: release/memberpress-bulk-invoice-generator.zip"
-        echo "📏 Size: $(ls -lh memberpress-bulk-invoice-generator.zip | awk '{print $5}')"
+        echo "📁 Location: release/pdf-invoice-generator-for-memberpress.zip"
+        echo "📏 Size: $(ls -lh pdf-invoice-generator-for-memberpress.zip | awk '{print $5}')"
         echo ""
         echo "🎉 Ready for production and distribution!"
     else

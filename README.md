@@ -1,4 +1,4 @@
-# MemberPress Bulk Invoice Generator
+# PDF Invoice Generator for MemberPress
 
 **Version:** 1.0.2  
 **Requires at least:** 5.0  
@@ -9,7 +9,7 @@
 
 Generate bulk PDF invoices for MemberPress transactions.
 
-![MemberPress Bulk Invoice Generator Dashboard](screenshots/dashboard.png)
+![PDF Invoice Generator for MemberPress Dashboard](screenshots/dashboard.png)
 
 ## Description
 
@@ -51,8 +51,8 @@ See [BUILD.md](BUILD.md) for detailed build instructions.
 ## File Structure
 
 ```
-memberpress-bulk-invoice-generator/
-├── memberpress-bulk-invoice-generator.php (Main plugin file)
+pdf-invoice-generator-for-memberpress/
+├── pdf-invoice-generator-for-memberpress.php (Main plugin file)
 ├── assets/
 │   ├── css/
 │   │   ├── admin.css (Source styles)
@@ -88,12 +88,12 @@ To create a release:
 ## Installation
 
 1. **Upload the Plugin**:
-   - Upload the `memberpress-bulk-invoice-generator` folder to your `/wp-content/plugins/` directory
+   - Upload the `pdf-invoice-generator-for-memberpress` folder to your `/wp-content/plugins/` directory
    - Or zip the folder and upload via WordPress admin
 
 2. **Activate the Plugin**:
    - Go to **Plugins** > **Installed Plugins**
-   - Find "MemberPress Bulk Invoice Generator" and click **Activate**
+   - Find "PDF Invoice Generator for MemberPress" and click **Activate**
 
 3. **Verify Dependencies**:
    - Ensure MemberPress is active
@@ -104,7 +104,7 @@ To create a release:
 
 ### Accessing the Tool
 
-1. Go to **MemberPress** > **Bulk Invoice Generator** in your WordPress admin
+1. Go to **MemberPress** > **PDF Invoices** in your WordPress admin
 2. The tool will be available under the MemberPress menu
 
 ### Generating All Invoices
@@ -192,9 +192,9 @@ The plugin provides a filter hook for customization:
 
 ### Filter Hooks
 
-**`mpbig_batch_size`** - Modify the number of transactions processed per batch
+**`mpfig_batch_size`** - Modify the number of transactions processed per batch
 ```php
-add_filter( 'mpbig_batch_size', function( $batch_size ) {
+add_filter( 'mpfig_batch_size', function( $batch_size ) {
     return 25; // Process 25 transactions per batch instead of 10
 });
 ```
@@ -202,7 +202,7 @@ add_filter( 'mpbig_batch_size', function( $batch_size ) {
 **Example usage for better performance:**
 ```php
 // Increase batch size for faster processing on powerful servers
-add_filter( 'mpbig_batch_size', function( $batch_size ) {
+add_filter( 'mpfig_batch_size', function( $batch_size ) {
     return 50; // This will significantly reduce processing time for large datasets
 });
 ```

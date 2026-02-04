@@ -1,4 +1,4 @@
-# Build Process for MemberPress Bulk Invoice Generator
+# Build Process for PDF Invoice Generator for MemberPress
 
 This plugin now includes a build process to minify CSS and JavaScript files for better performance.
 

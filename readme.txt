@@ -1,4 +1,4 @@
-=== MemberPress Bulk Invoice Generator ===
+=== PDF Invoice Generator for MemberPress ===
 Contributors: omaraelhawary
 Tags: memberpress, invoice, pdf, bulk, transactions, billing
 Requires at least: 5.0
@@ -41,12 +41,12 @@ This plugin extends the functionality of MemberPress and the MemberPress PDF Inv
 == Installation ==
 
 1. **Upload the Plugin**:
-   * Upload the `memberpress-bulk-invoice-generator` folder to your `/wp-content/plugins/` directory
+   * Upload the `pdf-invoice-generator-for-memberpress` folder to your `/wp-content/plugins/` directory
    * Or zip the folder and upload via WordPress admin
 
 2. **Activate the Plugin**:
    * Go to **Plugins** > **Installed Plugins**
-   * Find "MemberPress Bulk Invoice Generator" and click **Activate**
+   * Find "PDF Invoice Generator for MemberPress" and click **Activate**
 
 3. **Verify Dependencies**:
    * Ensure MemberPress is active
@@ -122,17 +122,17 @@ Enhanced batch processing and fixed blank screen issue. Recommended update.
 Added customer email filtering and improved UI. Recommended update.
 
 = 1.0.0 =
-Initial release of MemberPress Bulk Invoice Generator.
+Initial release of PDF Invoice Generator for MemberPress.
 
 == Developer Hooks ==
 
 The plugin provides filter hooks for customization:
 
-**`mpbig_batch_size`** - Modify the number of transactions processed per batch
+**`mpfig_batch_size`** - Modify the number of transactions processed per batch
 
 Example:
 [php]
-add_filter( 'mpbig_batch_size', function( $batch_size ) {
+add_filter( 'mpfig_batch_size', function( $batch_size ) {
     return 25; // Process 25 transactions per batch instead of 10
 });
 [/php]

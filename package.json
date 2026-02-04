@@ -1,7 +1,7 @@
 {
-  "name": "memberpress-bulk-invoice-generator",
+  "name": "pdf-invoice-generator-for-memberpress",
   "version": "1.0.2",
-  "description": "A WordPress plugin for generating bulk PDF invoices for MemberPress transactions",
+  "description": "A WordPress plugin for generating PDF invoices for MemberPress transactions",
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode=production",

@@ -1,6 +1,6 @@
 {
-    "name": "omarelhawary/memberpress-bulk-invoice-generator",
-    "description": "A WordPress plugin for generating bulk PDF invoices for MemberPress transactions",
+    "name": "omarelhawary/pdf-invoice-generator-for-memberpress",
+    "description": "A WordPress plugin for generating PDF invoices for MemberPress transactions",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "authors": [

@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0]
 
 ### Added
-- Initial release of MemberPress Bulk Invoice Generator
+- Initial release of PDF Invoice Generator for MemberPress
 - User-friendly admin interface integrated into MemberPress menu
 - Bulk PDF invoice generation for MemberPress transactions
 - Support for generating invoices for all transactions or specific date ranges
@@ -88,8 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### File Structure
 ```
-memberpress-bulk-invoice-generator/
-├── memberpress-bulk-invoice-generator.php (Main plugin file)
+pdf-invoice-generator-for-memberpress/
+├── pdf-invoice-generator-for-memberpress.php (Main plugin file)
 ├── assets/
 │   ├── css/
 │   │   ├── admin.css (Source styles)
