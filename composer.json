@@ -12,5 +12,14 @@
     "require": {
         "php": ">=7.4"
     },
+    "require-dev": {
+        "wp-coding-standards/wpcs": "^3.0",
+        "phpcompatibility/phpcompatibility-wp": "*",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    },
+    "scripts": {
+        "cs-check": "phpcs --standard=WordPress .",
+        "cs-fix": "phpcbf --standard=WordPress ."
+    },
     "minimum-stability": "stable"
 }

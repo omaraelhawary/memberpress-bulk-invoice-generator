@@ -10,13 +10,13 @@ Text Domain: memberpress-bulk-invoice-generator
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.8
 Requires PHP: 7.4
 Copyright: 2025
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
-  die( 'You are not allowed to call this page directly.' );
+	die( 'You are not allowed to call this page directly.' );
 }
 
 // Let's run the plugin
@@ -35,7 +35,7 @@ add_action( 'plugins_loaded', function() {
     return;
   }
 
-  $plugin_data = get_plugin_data(__FILE__, false, false);
+	$plugin_data = get_plugin_data( __FILE__, false, false );
 
   // Define useful constants
   define( 'MPBIG_VERSION', $plugin_data['Version'] ?? '1.0.0' );
@@ -67,8 +67,11 @@ class MPBulkInvoiceGenerator {
     add_action( 'wp_ajax_mpbig_download_files', array( $this, 'ajax_download_files' ) );
     add_action( 'admin_notices', array( $this, 'admin_notices' ) );
     
-    // Clean up old progress data
-    add_action( 'wp_scheduled_delete', array( $this, 'cleanup_old_progress' ) );
+    // Clean up old progress data on init (runs on every page load, but checks timestamp)
+    add_action( 'init', array( $this, 'cleanup_old_progress' ) );
+    // Also schedule a proper WordPress cron event for cleanup
+    add_action( 'mpbig_cleanup_progress', array( $this, 'cleanup_old_progress' ) );
+    add_action( 'admin_init', array( $this, 'schedule_cleanup_event' ) );
     
     // Apply filter to batch size
     $this->batch_size = apply_filters( 'mpbig_batch_size', $this->batch_size );
@@ -91,10 +94,10 @@ class MPBulkInvoiceGenerator {
   /**
    * Enqueue scripts and styles
    */
-  public function enqueue_scripts( $hook ) {
-    if ( $hook !== 'memberpress_page_memberpress-bulk-invoice-generator' ) {
-      return;
-    }
+	public function enqueue_scripts( $hook ) {
+		if ( 'memberpress_page_memberpress-bulk-invoice-generator' !== $hook ) {
+			return;
+		}
 
     wp_enqueue_script( 'jquery-ui-datepicker' );
     wp_enqueue_style( 'wp-jquery-ui-dialog' );
@@ -333,7 +336,7 @@ class MPBulkInvoiceGenerator {
         </div>
         
         <div class="mpbig-file-actions">
-          <button type="button" class="mpbig-button mpbig-button-primary" id="mpbig-download-files" <?php echo $file_count > 0 ? '' : 'disabled'; ?>>
+          <button type="button" class="mpbig-button mpbig-button-primary" id="mpbig-download-files" <?php echo 0 < $file_count ? '' : 'disabled'; ?>>
             <span class="mpbig-spinner mpbig-hidden" id="mpbig-download-spinner"></span>
             <?php esc_html_e( 'Download All Files', 'memberpress-bulk-invoice-generator' ); ?>
           </button>
@@ -431,35 +434,35 @@ class MPBulkInvoiceGenerator {
         return;
       }
 
-    $type = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : 'all';
-    $statuses = isset( $_POST['status'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['status'] ) ) : array( 'complete', 'pending', 'refunded' );
-    $create_zip = isset( $_POST['create_zip'] ) && $_POST['create_zip'] === '1';
-    $membership_id = isset( $_POST['membership_id'] ) ? intval( $_POST['membership_id'] ) : 0;
-    $customer_email = isset( $_POST['customer_email'] ) ? sanitize_email( wp_unslash( $_POST['customer_email'] ) ) : '';
-    
-    $start_date = '';
-    $end_date = '';
-    
-    if ( $type === 'period' ) {
-      $start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) . ' 00:00:00' : '';
-      $end_date = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) . ' 23:59:59' : '';
-      
-      // Validate date format
-      if ( ! empty( $start_date ) && ! $this->validate_date( $start_date ) ) {
-        wp_send_json_error( array( 'message' => __( 'Invalid start date format. Please use YYYY-MM-DD format.', 'memberpress-bulk-invoice-generator' ) ) );
-        return;
-      }
-      
-      if ( ! empty( $end_date ) && ! $this->validate_date( $end_date ) ) {
-        wp_send_json_error( array( 'message' => __( 'Invalid end date format. Please use YYYY-MM-DD format.', 'memberpress-bulk-invoice-generator' ) ) );
-        return;
-      }
-      
-      if ( ! empty( $start_date ) && ! empty( $end_date ) && strtotime( $start_date ) > strtotime( $end_date ) ) {
-        wp_send_json_error( array( 'message' => __( 'Start date must be before end date.', 'memberpress-bulk-invoice-generator' ) ) );
-        return;
-      }
-    }
+		$type = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : 'all';
+		$statuses = isset( $_POST['status'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['status'] ) ) : array( 'complete', 'pending', 'refunded' );
+		$create_zip = isset( $_POST['create_zip'] ) && '1' === $_POST['create_zip'];
+		$membership_id = isset( $_POST['membership_id'] ) ? intval( $_POST['membership_id'] ) : 0;
+		$customer_email = isset( $_POST['customer_email'] ) ? sanitize_email( wp_unslash( $_POST['customer_email'] ) ) : '';
+
+		$start_date = '';
+		$end_date = '';
+
+		if ( 'period' === $type ) {
+			$start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) . ' 00:00:00' : '';
+			$end_date = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) . ' 23:59:59' : '';
+
+			// Validate date format
+			if ( ! empty( $start_date ) && ! $this->validate_date( $start_date ) ) {
+				wp_send_json_error( array( 'message' => __( 'Invalid start date format. Please use YYYY-MM-DD format.', 'memberpress-bulk-invoice-generator' ) ) );
+				return;
+			}
+
+			if ( ! empty( $end_date ) && ! $this->validate_date( $end_date ) ) {
+				wp_send_json_error( array( 'message' => __( 'Invalid end date format. Please use YYYY-MM-DD format.', 'memberpress-bulk-invoice-generator' ) ) );
+				return;
+			}
+
+			if ( ! empty( $start_date ) && ! empty( $end_date ) && strtotime( $start_date ) > strtotime( $end_date ) ) {
+				wp_send_json_error( array( 'message' => __( 'Start date must be before end date.', 'memberpress-bulk-invoice-generator' ) ) );
+				return;
+			}
+		}
 
     // Get all transaction IDs that match criteria
     $txn_ids = $this->get_transaction_ids( $type, $statuses, $start_date, $end_date, $membership_id, $customer_email );
@@ -494,6 +497,11 @@ class MPBulkInvoiceGenerator {
     ) );
     
     } catch ( Exception $e ) {
+      // Log error for debugging
+      if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'MPBIG Error in ajax_generate_invoices: ' . $e->getMessage() );
+        error_log( 'MPBIG Stack trace: ' . $e->getTraceAsString() );
+      }
       wp_send_json_error( array( 'message' => __( 'An error occurred while processing your request: ', 'memberpress-bulk-invoice-generator' ) . $e->getMessage() ) );
     }
   }
@@ -533,26 +541,31 @@ class MPBulkInvoiceGenerator {
     $successful_in_batch = 0;
     $errors_in_batch = array();
 
-    // Process current batch
-    while ( $processed_in_batch < $batch_size && ! empty( $progress_data['txn_ids'] ) ) {
-      $txn_id = array_shift( $progress_data['txn_ids'] );
-      
-      try {
-        $txn = new MeprTransaction( $txn_id );
-        
-        if ( $txn->id > 0 ) {
-          $path = $invoices_ctrl->create_receipt_pdf( $txn );
-          if ( $path ) {
-            $successful_in_batch++;
-          }
-        }
-      } catch ( Exception $e ) {
-        // translators: %1$d is the transaction ID, %2$s is the error message
-        $errors_in_batch[] = sprintf( __( 'Error generating invoice for transaction %1$d: %2$s', 'memberpress-bulk-invoice-generator' ), $txn_id, $e->getMessage() );
-      }
-      
-      $processed_in_batch++;
-    }
+		// Process current batch
+		while ( $processed_in_batch < $batch_size && ! empty( $progress_data['txn_ids'] ) ) {
+			$txn_id = array_shift( $progress_data['txn_ids'] );
+
+			try {
+				$txn = new MeprTransaction( $txn_id );
+
+				if ( 0 < $txn->id ) {
+					$path = $invoices_ctrl->create_receipt_pdf( $txn );
+					if ( $path ) {
+						$successful_in_batch++;
+					}
+				}
+			} catch ( Exception $e ) {
+				// Log error for debugging
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'MPBIG Error generating invoice for transaction ' . $txn_id . ': ' . $e->getMessage() );
+					error_log( 'MPBIG Stack trace: ' . $e->getTraceAsString() );
+				}
+				// translators: %1$d is the transaction ID, %2$s is the error message
+				$errors_in_batch[] = sprintf( __( 'Error generating invoice for transaction %1$d: %2$s', 'memberpress-bulk-invoice-generator' ), $txn_id, $e->getMessage() );
+			}
+
+			$processed_in_batch++;
+		}
 
     // Update progress
     $progress_data['processed'] += $processed_in_batch;
@@ -615,6 +628,9 @@ class MPBulkInvoiceGenerator {
     $pdf_dir = WP_CONTENT_DIR . '/uploads/mepr/mpdf/';
     
     if ( ! is_dir( $pdf_dir ) ) {
+      if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'MPBIG Error: PDF directory not found: ' . $pdf_dir );
+      }
       wp_send_json( array(
         'success' => false,
         'message' => __( 'PDF directory not found.', 'memberpress-bulk-invoice-generator' )
@@ -632,6 +648,9 @@ class MPBulkInvoiceGenerator {
         'zip_filename' => basename( $zip_file )
       ) );
     } else {
+      if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'MPBIG Error: Failed to create ZIP file in directory: ' . $pdf_dir );
+      }
       wp_send_json( array(
         'success' => false,
         'message' => __( 'Failed to create ZIP file.', 'memberpress-bulk-invoice-generator' )
@@ -815,26 +834,44 @@ class MPBulkInvoiceGenerator {
 
       $table = $wpdb->prefix . 'mepr_transactions';
       
-      // Validate table name to prevent SQL injection
+      // Validate table name to prevent SQL injection - more strict validation
       $table = preg_replace( '/[^a-zA-Z0-9_]/', '', $table );
+      
+      // Additional safety: ensure table name matches expected pattern
+      if ( ! preg_match( '/^[a-zA-Z0-9_]+$/', $table ) || strpos( $table, 'mepr_transactions' ) === false ) {
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+          error_log( 'MPBIG Security: Invalid table name detected: ' . $table );
+        }
+        return array();
+      }
       
       // Check if MemberPress transactions table exists
       // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Table existence check required
       $table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) === $table;
       
       if ( $table_exists ) {
+        // Validate statuses array
+        $valid_statuses = array( 'complete', 'pending', 'refunded', 'confirmed', 'failed' );
+        $statuses = array_intersect( $statuses, $valid_statuses );
+        
+        if ( empty( $statuses ) ) {
+          return array();
+        }
+        
         $status_placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
         
-        // Build query parts - use sprintf for table name since it's validated
-        $base_query = sprintf( "SELECT t.id FROM `%s` t", $table );
+        // Build query parts - use esc_sql for table name as additional safety layer
+        $table_escaped = esc_sql( $table );
+        $base_query = "SELECT t.id FROM `{$table_escaped}` t";
         
         // Add user table join if customer email filter is specified
         if ( ! empty( $customer_email ) ) {
-          $base_query .= " INNER JOIN {$wpdb->users} u ON t.user_id = u.ID";
+          $users_table = esc_sql( $wpdb->users );
+          $base_query .= " INNER JOIN `{$users_table}` u ON t.user_id = u.ID";
         }
         
         // Match MemberPress default behavior: exclude confirmations, non-payment transactions, and failed transactions
-        $base_query .= sprintf( " WHERE t.txn_type = 'payment' AND t.status <> 'confirmed' AND t.status <> 'failed' AND t.status IN (%s)", $status_placeholders );
+        $base_query .= " WHERE t.txn_type = 'payment' AND t.status <> 'confirmed' AND t.status <> 'failed' AND t.status IN ({$status_placeholders})";
         $query_args = $statuses;
 
         if ( $type === 'period' && ! empty( $start_date ) && ! empty( $end_date ) ) {
@@ -846,13 +883,13 @@ class MPBulkInvoiceGenerator {
         // Add membership filter if specified
         if ( $membership_id > 0 ) {
           $base_query .= " AND t.product_id = %d";
-          $query_args[] = $membership_id;
+          $query_args[] = absint( $membership_id );
         }
 
         // Add customer email filter if specified
         if ( ! empty( $customer_email ) ) {
           $base_query .= " AND u.user_email = %s";
-          $query_args[] = $customer_email;
+          $query_args[] = sanitize_email( $customer_email );
         }
 
         $base_query .= " ORDER BY t.created_at ASC";
@@ -864,7 +901,14 @@ class MPBulkInvoiceGenerator {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared -- MemberPress transaction queries required
         $results = $wpdb->get_results( $wpdb->prepare( $base_query, $query_args ) );
 
-        $txn_ids = array_map( function( $row ) { return $row->id; }, $results );
+        if ( $wpdb->last_error ) {
+          if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            error_log( 'MPBIG Database Error: ' . $wpdb->last_error );
+          }
+          return array();
+        }
+
+        $txn_ids = array_map( function( $row ) { return absint( $row->id ); }, $results );
       } else {
         $txn_ids = array();
       }
@@ -880,22 +924,48 @@ class MPBulkInvoiceGenerator {
    * Create ZIP file from PDF directory
    */
   private function create_zip_file( $pdf_dir ) {
+    if ( ! class_exists( 'ZipArchive' ) ) {
+      if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'MPBIG Error: ZipArchive class not available' );
+      }
+      return false;
+    }
+
     $zip_filename = 'memberpress-invoices-' . gmdate( 'Y-m-d-H-i-s' ) . '.zip';
     $zip_path = $pdf_dir . $zip_filename;
 
     $zip = new ZipArchive();
     
-    if ( $zip->open( $zip_path, ZipArchive::CREATE ) !== TRUE ) {
+		$result = $zip->open( $zip_path, ZipArchive::CREATE );
+		if ( true !== $result ) {
+      if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'MPBIG Error: Failed to open ZIP file. Error code: ' . $result . ', Path: ' . $zip_path );
+      }
       return false;
     }
 
     $files = glob( $pdf_dir . '*.pdf' );
     
+    if ( empty( $files ) ) {
+      if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'MPBIG Warning: No PDF files found to add to ZIP in directory: ' . $pdf_dir );
+      }
+    }
+    
     foreach ( $files as $file ) {
-      $zip->addFile( $file, basename( $file ) );
+      if ( is_file( $file ) ) {
+        $zip->addFile( $file, basename( $file ) );
+      }
     }
 
     $zip->close();
+    
+    if ( ! file_exists( $zip_path ) ) {
+      if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'MPBIG Error: ZIP file was not created at path: ' . $zip_path );
+      }
+      return false;
+    }
     
     return $zip_path;
   }
@@ -913,6 +983,15 @@ class MPBulkInvoiceGenerator {
       if ( $progress_data['start_time'] < $one_hour_ago ) {
         delete_option( $this->progress_key );
       }
+    }
+  }
+
+  /**
+   * Schedule cleanup event if not already scheduled
+   */
+  public function schedule_cleanup_event() {
+    if ( ! wp_next_scheduled( 'mpbig_cleanup_progress' ) ) {
+      wp_schedule_event( time(), 'hourly', 'mpbig_cleanup_progress' );
     }
   }
 
